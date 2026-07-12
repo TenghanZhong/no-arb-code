@@ -1,0 +1,9 @@
+{
+  "selected_rows": 24,
+  "matched_pairs": 12,
+  "pairs_with_both_specifications": 12,
+  "optimal_rows": 24,
+  "max_calendar_violation": 0.0,
+  "expected_pairs": 12,
+  "audit_pass": true
+}

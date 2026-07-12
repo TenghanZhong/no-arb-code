@@ -1,0 +1,56 @@
+{
+  "snapshot_hour_utc": 12,
+  "currencies": ["BTC", "ETH"],
+  "repair_dte_days": [2, 30],
+  "marking_dte_days": [0, 31],
+  "marking_extra_days": 1,
+  "normalized_price_floor": 0.0005,
+  "minimum_strikes_per_slice": 7,
+  "classical": {
+    "calendar_months": 18,
+    "anchor_months": ["2022-11", "2023-03", "2023-06", "2024-03", "2025-01", "2026-05"],
+    "selection_groups": ["top", "random", "bottom"],
+    "slices_per_evaluation": 50,
+    "selection_seed": 20260605,
+    "smoothness_weights": [0.01, 0.1, 1.0, 10.0]
+  },
+  "targeted_nn": {
+    "evaluations": [
+      ["BTC", "2023-03", "top"],
+      ["BTC", "2023-03", "random"],
+      ["BTC", "2023-03", "bottom"],
+      ["ETH", "2023-03", "top"],
+      ["ETH", "2023-03", "random"],
+      ["ETH", "2023-03", "bottom"],
+      ["BTC", "2023-06", "top"],
+      ["ETH", "2023-06", "top"],
+      ["BTC", "2026-05", "top"],
+      ["ETH", "2025-01", "top"]
+    ],
+    "hidden_layers": [64, 64],
+    "activation": "tanh",
+    "optimizer": "adam",
+    "l2_weight_penalty": 0.0001,
+    "maximum_iterations": 500,
+    "validation_share": 0.15,
+    "embargo_days": 7,
+    "lookback_months": 12
+  },
+  "seed_replication": {
+    "seeds": [20260605, 20260606, 20260607, 20260608, 20260609],
+    "calendar_months": 18,
+    "currencies": ["BTC", "ETH"],
+    "selection_group": "top",
+    "analysis_slice_cap": 47,
+    "excluded_design_pilots": ["2025-01", "2026-05"]
+  },
+  "lp_audit": {
+    "relative_tolerance": 0.00001,
+    "strict_absolute_tolerance": 1e-10,
+    "conditioned_absolute_tolerance": 1e-9
+  },
+  "downstream_screens": {
+    "minimum_next_day_coverage": 0.9,
+    "minimum_matched_losses": 10
+  }
+}

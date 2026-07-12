@@ -1,0 +1,8 @@
+{
+  "canonical_panel": "data/synthetic_call_panel.parquet",
+  "runs_checked": 406,
+  "runs_passed": 406,
+  "runs_failed": 0,
+  "max_missing_rows": 0,
+  "max_value_difference": 0.0
+}

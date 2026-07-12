@@ -1,0 +1,9 @@
+{
+  "currency_month_cells": 36,
+  "slice_set_mismatches": 0,
+  "baseline_key_mismatches": 0,
+  "missing_deterministic_arm_runs": 0,
+  "max_baseline_abs_difference": 0.0,
+  "comparison_tolerance": 1e-12,
+  "audit_pass": true
+}

@@ -1,0 +1,17 @@
+{
+  "expected_counts_pass": true,
+  "runs_audited": 406,
+  "runs_passed": 406,
+  "runs_failed": 0,
+  "max_constraint_violation": 1.913974434823645e-06,
+  "max_attempted_constraint_violation": 7.928099123609725e-06,
+  "max_vertical_slope": 1.000000493512056,
+  "repair_failures": 33,
+  "unexpected_repair_failures": 0,
+  "seed_design_pass": true,
+  "seed_baseline_consistency_pass": true,
+  "seed_slice_subset_equivalence_pass": true,
+  "calendar_audit_pass": true,
+  "lp_configuration_audit_pass": true,
+  "lp_range_flag_polish_audit_pass": true
+}

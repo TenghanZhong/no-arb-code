@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Large or machine-local inputs and full-run outputs.
+data/*
+!data/README.md
+!data/input_panel.sha256
+results/
+derived/
+logs/
+figures/
+generated/
+
+# LaTeX and editor by-products.
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store

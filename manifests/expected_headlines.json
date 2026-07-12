@@ -1,0 +1,41 @@
+{
+  "classical": {
+    "evaluations": 108,
+    "calendar_months": 18,
+    "median_evaluation_p90_smooth10_gamma_gap": 0.07262271176987126,
+    "median_evaluation_p90_l1_l2_control": 0.0039125192900625,
+    "median_calendar_month_excess": 0.0650829848543876,
+    "positive_calendar_months": 18,
+    "risk_reversal_hedge_notional_bps": 18.62154229420807
+  },
+  "lp_range": {
+    "observations": 51189,
+    "spearman_rank_correlation": 0.8721850362127538,
+    "log_log_r2": 0.6112224194042869,
+    "strict_tolerance_exceedances": 57,
+    "absolute_1e_9_exceedances": 0
+  },
+  "targeted_nn": {
+    "evaluations": 10,
+    "projection_successes": 500,
+    "projection_attempts": 500,
+    "median_p90_gamma_gap_l2_nnproj": 0.18897954944965756,
+    "median_p90_gamma_gap_nnproj_smooth10": 0.19570341510090225
+  },
+  "seed_replication": {
+    "refits": 180,
+    "positive_calendar_months": 17,
+    "calendar_months": 18,
+    "median_seed_pair_p90_d2_gap": 1.3822494254521895,
+    "median_l1_l2_control_p90_d2_gap": 0.07189985484079103,
+    "minimum_common_support_share": 0.8085106382978723
+  },
+  "var_style": {
+    "common_cells": 432,
+    "common_median": 0.01108344612894735,
+    "common_p90": 0.09327542951365954,
+    "repair_specific_cells": 417,
+    "repair_specific_median": 0.0904168552232878,
+    "repair_specific_p90": 0.38823050655738134
+  }
+}

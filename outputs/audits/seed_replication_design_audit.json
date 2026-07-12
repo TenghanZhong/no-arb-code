@@ -1,0 +1,32 @@
+{
+  "manifest": "results/nn_seed_18m/gate_run_manifest.csv",
+  "rows": 180,
+  "unique_runs": 180,
+  "calendar_months": 18,
+  "currency_month_cells": 36,
+  "seeds": [
+    20260605,
+    20260606,
+    20260607,
+    20260608,
+    20260609
+  ],
+  "all_cells_have_five_rows": true,
+  "all_cells_have_five_unique_seeds": true,
+  "top_selection_only": true,
+  "analysis_slice_cap": [
+    47
+  ],
+  "raw_slice_counts": {
+    "47": 5,
+    "49": 175
+  },
+  "pilot_months_excluded": true,
+  "no_reused_runs": true,
+  "expected_seed_set": true,
+  "commands_require_full_lookback": true,
+  "commands_match_raw_slice_count": true,
+  "all_outputs_complete": true,
+  "amendment_recorded": true,
+  "audit_pass": true
+}

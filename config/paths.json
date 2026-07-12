@@ -1,0 +1,7 @@
+{
+  "synthetic_call_panel": "data/synthetic_call_panel.parquet",
+  "results": "results",
+  "derived": "derived",
+  "figures": "figures",
+  "logs": "logs"
+}

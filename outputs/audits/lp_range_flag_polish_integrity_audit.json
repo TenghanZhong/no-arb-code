@@ -1,0 +1,11 @@
+{
+  "reported_pass": true,
+  "original_range_flags": 129,
+  "projection_failures": 0,
+  "polished_range_flags": 2,
+  "polished_conditioned_range_flags": 0,
+  "flags_within_repair_residual_d2_scale": 129,
+  "max_polished_constraint_violation": 1.0982686982075052e-11,
+  "polish_solver_tolerance": 2e-11,
+  "audit_pass": true
+}
