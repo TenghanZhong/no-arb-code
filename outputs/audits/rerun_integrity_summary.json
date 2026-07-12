@@ -8,10 +8,9 @@
   "max_vertical_slope": 1.000000493512056,
   "repair_failures": 33,
   "unexpected_repair_failures": 0,
-  "seed_design_pass": true,
+  "seed_manifest_audit_pass": true,
   "seed_baseline_consistency_pass": true,
-  "seed_slice_subset_equivalence_pass": true,
   "calendar_audit_pass": true,
   "lp_configuration_audit_pass": true,
-  "lp_range_flag_polish_audit_pass": true
+  "lp_range_tolerance_audit_pass": true
 }

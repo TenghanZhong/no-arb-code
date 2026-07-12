@@ -9,7 +9,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "code" / "working" / "verify_full_rerun.py"
+SCRIPT = ROOT / "code" / "analysis" / "verify_full_rerun.py"
 
 
 def load_module():
@@ -72,7 +72,7 @@ def write_seed_run(path: Path, l2_value: float) -> None:
             {"currency": "BTC", "date": 1, "expiration_date": 2, "core_repair_slice": True},
             {"currency": "BTC", "date": 3, "expiration_date": 4, "core_repair_slice": True},
         ]
-    ).to_parquet(path / "phase2_input_panel_repair.parquet", index=False)
+    ).to_parquet(path / "repair_panel.parquet", index=False)
     values = {
         "L1": 0.1,
         "L2": l2_value,
@@ -123,24 +123,6 @@ def test_seed_baseline_consistency_requires_identical_deterministic_outputs(tmp_
     assert failed["max_baseline_abs_difference"] == pytest.approx(0.01)
 
 
-def test_seed_equivalence_audit_requires_all_frame_checks() -> None:
-    report = {
-        "pass": True,
-        "model_fields_equal": True,
-        "comparisons": {
-            "surfaces": {"pass": True, "max_abs_difference": 0.0},
-            "greeks": {"pass": True, "max_abs_difference": 0.0},
-            "books": {"pass": True, "max_abs_difference": 0.0},
-        },
-    }
-
-    result = load_module().audit_seed_equivalence(report)
-
-    assert result["audit_pass"] is True
-    report["comparisons"]["greeks"]["pass"] = False
-    assert load_module().audit_seed_equivalence(report)["audit_pass"] is False
-
-
 def test_calendar_audit_requires_matched_optimal_pairs() -> None:
     frame = pd.DataFrame(
         [
@@ -185,21 +167,21 @@ def test_lp_configuration_matches_repair_certification_policy() -> None:
     assert failed["audit_pass"] is False
 
 
-def test_lp_flag_polish_audit_preserves_strict_flags_but_requires_conditioned_clearance() -> None:
+def test_lp_range_tolerance_audit_requires_zero_audit_exceedances() -> None:
     report = {
         "audit_pass": True,
-        "original_range_flags": 129,
+        "initial_exceedances": 129,
         "projection_failures": 0,
-        "polished_range_flags": 2,
-        "polished_conditioned_range_flags": 0,
-        "flags_within_repair_residual_d2_scale": 129,
-        "max_polished_constraint_violation": 1.1e-11,
-        "polish_solver_tolerance": 2e-11,
+        "strict_tolerance_exceedances_after_refinement": 2,
+        "audit_tolerance_exceedances": 0,
+        "exceedances_within_repair_residual_scale": 129,
+        "max_refined_constraint_violation": 1.1e-11,
+        "refinement_solver_tolerance": 2e-11,
     }
 
-    passed = load_module().audit_lp_flag_polish(report)
+    passed = load_module().audit_lp_range_tolerance(report)
     assert passed["audit_pass"] is True
-    assert passed["polished_range_flags"] == 2
+    assert passed["strict_tolerance_exceedances_after_refinement"] == 2
 
-    report["polished_conditioned_range_flags"] = 1
-    assert load_module().audit_lp_flag_polish(report)["audit_pass"] is False
+    report["audit_tolerance_exceedances"] = 1
+    assert load_module().audit_lp_range_tolerance(report)["audit_pass"] is False

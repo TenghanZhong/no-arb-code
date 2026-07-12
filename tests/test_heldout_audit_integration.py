@@ -10,8 +10,8 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-AUDIT = ROOT / "code" / "working" / "project_scripts" / "audit_nnproj_heldout_fit.py"
-POSTPROCESS = ROOT / "code" / "working" / "run_postprocessing_full.py"
+AUDIT = ROOT / "code" / "analysis" / "nnproj" / "audit_nnproj_heldout_fit.py"
+POSTPROCESS = ROOT / "code" / "analysis" / "run_postprocessing_full.py"
 
 
 def load_postprocess_module():
@@ -44,10 +44,10 @@ def test_heldout_audit_imports_from_isolated_snapshot() -> None:
     assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
-def test_postprocessing_runs_heldout_audit_before_headline_summary() -> None:
+def test_postprocessing_runs_heldout_audit_before_reported_summary() -> None:
     source = POSTPROCESS.read_text(encoding="utf-8")
     audit_position = source.find('"targeted_nn_heldout_fit"')
-    summary_position = source.find('"headline_summary"')
+    summary_position = source.find('"reported_summary"')
     assert audit_position >= 0
     assert summary_position >= 0
     assert audit_position < summary_position
@@ -69,10 +69,10 @@ def test_postprocessing_recomputes_pair_scale_before_aggregates() -> None:
 
 def test_completed_run_count_ignores_aggregate_directories(tmp_path: Path) -> None:
     (tmp_path / "run_a").mkdir()
-    (tmp_path / "run_a" / "phase2_summary.csv").write_text("ok\n1\n", encoding="utf-8")
+    (tmp_path / "run_a" / "repair_summary.csv").write_text("ok\n1\n", encoding="utf-8")
     (tmp_path / "run_b").mkdir()
     (tmp_path / "_aggregate").mkdir()
-    (tmp_path / "_aggregate" / "phase2_summary.csv").write_text("ok\n1\n", encoding="utf-8")
+    (tmp_path / "_aggregate" / "repair_summary.csv").write_text("ok\n1\n", encoding="utf-8")
 
     assert load_postprocess_module().completed_run_count(tmp_path) == 1
 

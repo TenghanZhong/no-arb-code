@@ -9,7 +9,7 @@ from option_repair_risk.audit_helpers import (
 )
 
 
-def test_classify_dte_bucket_matches_phase1_bins():
+def test_classify_dte_bucket_matches_panel_bins():
     assert classify_dte_bucket(1.0) == "0-1"
     assert classify_dte_bucket(2.0) == "2-7"
     assert classify_dte_bucket(14.0) == "8-14"

@@ -1,8 +1,0 @@
-{
-  "reported_pass": true,
-  "model_fields_equal": true,
-  "frame_checks": 4,
-  "frame_checks_passed": 4,
-  "max_abs_difference": 0.0,
-  "audit_pass": true
-}

@@ -1,0 +1,26 @@
+{
+  "manifest": "results/nn_seed_18m/run_manifest.csv",
+  "rows": 180,
+  "unique_runs": 180,
+  "calendar_months": 18,
+  "currency_month_cells": 36,
+  "seeds": [
+    20260605,
+    20260606,
+    20260607,
+    20260608,
+    20260609
+  ],
+  "all_cells_have_five_rows": true,
+  "all_cells_have_five_unique_seeds": true,
+  "top_selection_only": true,
+  "analysis_slice_cap": [
+    47
+  ],
+  "excluded_months_absent": true,
+  "seed_set_matches_design": true,
+  "lookback_settings_match_design": true,
+  "slice_count_settings_match_design": true,
+  "outputs_complete": true,
+  "audit_pass": true
+}

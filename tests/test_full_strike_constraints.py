@@ -7,8 +7,8 @@ import numpy as np
 from scipy.optimize import linprog
 
 
-WORKING = Path(__file__).resolve().parents[1] / "code" / "working"
-COMMON = WORKING / "common"
+ANALYSIS = Path(__file__).resolve().parents[1] / "code" / "analysis"
+COMMON = ANALYSIS / "common"
 sys.path.insert(0, str(COMMON))
 
 from full_strike_constraints import (  # noqa: E402

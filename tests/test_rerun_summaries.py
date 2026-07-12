@@ -10,8 +10,8 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SUMMARY_SCRIPT = ROOT / "code" / "working" / "summarize_full_rerun.py"
-PLOT_SCRIPT = ROOT / "code" / "working" / "paper_repo_scripts" / "plot_paper_figures.py"
+SUMMARY_SCRIPT = ROOT / "code" / "analysis" / "summarize_full_rerun.py"
+PLOT_SCRIPT = ROOT / "code" / "analysis" / "diagnostics" / "plot_artifact_figures.py"
 
 
 def load_summary_module():
@@ -25,7 +25,7 @@ def load_summary_module():
 
 
 def load_plot_module():
-    name = "test_plot_paper_figures"
+    name = "test_plot_artifact_figures"
     spec = importlib.util.spec_from_file_location(name, PLOT_SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -46,8 +46,8 @@ def test_relative_difference_figure_uses_only_the_classical_source() -> None:
                 "p90_omega": value,
             }
             for source, value in (
-                ("classical_v38_extra_clusters", 0.1),
-                ("nnproj_oos_v42", 0.2),
+                ("classical_additional_clusters", 0.1),
+                ("nn_targeted", 0.2),
             )
         ]
     )
@@ -55,7 +55,7 @@ def test_relative_difference_figure_uses_only_the_classical_source() -> None:
     selected = load_plot_module().var_relative_difference_plot_data(frame)
 
     assert len(selected) == 1
-    assert selected.iloc[0]["source"] == "classical_v38_extra_clusters"
+    assert selected.iloc[0]["source"] == "classical_additional_clusters"
 
 
 def test_projection_success_is_scoped_to_requested_arm(tmp_path: Path) -> None:
@@ -180,14 +180,14 @@ def test_lp_range_audit_reports_residuals_statuses_and_exceedance(tmp_path: Path
             },
         ]
     ).to_csv(tmp_path / "feasible_curvature_range_merged_pairwise.csv", index=False)
-    polish = {
+    tolerance_audit = {
         "audit_pass": True,
-        "original_range_flags": 1,
-        "polished_range_flags": 0,
-        "polished_conditioned_range_flags": 0,
+        "initial_exceedances": 1,
+        "strict_tolerance_exceedances_after_refinement": 0,
+        "audit_tolerance_exceedances": 0,
     }
-    (tmp_path / "range_flag_polish_audit.json").write_text(
-        json.dumps(polish), encoding="utf-8"
+    (tmp_path / "lp_range_tolerance_audit.json").write_text(
+        json.dumps(tolerance_audit), encoding="utf-8"
     )
 
     summary = load_summary_module().lp_range_audit(tmp_path)
@@ -195,10 +195,10 @@ def test_lp_range_audit_reports_residuals_statuses_and_exceedance(tmp_path: Path
     assert summary["rows"] == 3
     assert summary["successful_rows"] == 2
     assert summary["status_counts"] == {"ok": 2, "solver_failure": 1}
-    assert summary["range_consistency_flags"] == 1
+    assert summary["range_exceedances"] == 1
     assert summary["max_raw_exceedance"] == pytest.approx(2e-5)
     assert summary["max_lp_constraint_violation"] == pytest.approx(4e-10)
-    assert summary["numerical_polish_audit"] == polish
+    assert summary["lp_tolerance_audit"] == tolerance_audit
 
 
 def test_hedge_notional_anchor_reads_persistence_units_without_rescaling(tmp_path: Path) -> None:
@@ -249,15 +249,15 @@ def test_surface_mechanism_summary_preserves_pair_level_diagnostics(tmp_path: Pa
                 "spearman_d2_vs_black_gamma": 0.9,
             },
         ]
-    ).to_csv(tmp_path / "surface_mechanism_headline.csv", index=False)
+    ).to_csv(tmp_path / "surface_mechanism_summary.csv", index=False)
     (tmp_path / "surface_mechanism_audit.json").write_text(
-        '{"rows": 100, "evaluation_pair_rows": 20, "bound_flags": 0, "max_amplification_ratio": 0.99}',
+        '{"rows": 100, "evaluation_pair_rows": 20, "bound_exceedances": 0, "max_amplification_ratio": 0.99}',
         encoding="utf-8",
     )
 
     summary = load_summary_module().surface_mechanism_summary(tmp_path)
 
-    assert summary["audit"]["bound_flags"] == 0
+    assert summary["audit"]["bound_exceedances"] == 0
     assert summary["audit"]["max_amplification_ratio"] == pytest.approx(0.99)
     assert summary["pairs"]["classical:L2__SMOOTH_RHO_10"]["p90_price_gap_abs"] == pytest.approx(0.008)
     assert summary["pairs"]["classical:L2__SMOOTH_RHO_10"]["spearman_d2_vs_black_gamma"] == pytest.approx(0.9)
@@ -291,7 +291,7 @@ def test_calendar_screen_summary_matches_pre_and_post_rows(tmp_path: Path) -> No
                     "p90_scaled_curvature_diff": value,
                 }
             )
-    pd.DataFrame(rows).to_csv(tmp_path / "calendar_certified_pair_results.csv", index=False)
+    pd.DataFrame(rows).to_csv(tmp_path / "calendar_spread_pair_results.csv", index=False)
 
     summary = load_summary_module().calendar_screen_summary(tmp_path)
 

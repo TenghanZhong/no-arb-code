@@ -1,0 +1,11 @@
+{
+  "source_check_pass": true,
+  "initial_exceedances": 129,
+  "projection_failures": 0,
+  "strict_tolerance_exceedances_after_refinement": 2,
+  "audit_tolerance_exceedances": 0,
+  "exceedances_within_repair_residual_scale": 129,
+  "max_refined_constraint_violation": 1.0982686982075052e-11,
+  "refinement_solver_tolerance": 2e-11,
+  "audit_pass": true
+}

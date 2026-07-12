@@ -117,7 +117,7 @@
     "median_median_seed_pair_p90_hedge_gap_impact": 0.011033017248786432
   },
   "lp_range": {
-    "source": "classical_all_selected_roots",
+    "source": "classical_selected_slices",
     "pair_label": "L2_vs_SMOOTH_RHO_10",
     "selection": "top",
     "n_rows": 51189,
@@ -142,29 +142,29 @@
         "strike_not_found": 12,
         "edge_strike": 4
       },
-      "range_consistency_flags": 129,
+      "range_exceedances": 129,
       "max_raw_exceedance": 3.758448285123357e-05,
       "max_relative_exceedance": 245802.6492832754,
       "max_lp_constraint_violation": 6.821210263296962e-13,
-      "numerical_polish_audit": {
+      "lp_tolerance_audit": {
         "successful_lp_rows": 188862,
-        "original_range_flags": 129,
-        "flagged_runs": 22,
-        "flagged_slices": 29,
-        "curve_polishes": 58,
+        "initial_exceedances": 129,
+        "affected_runs": 22,
+        "affected_slices": 29,
+        "curve_refinements": 58,
         "projection_failures": 0,
-        "polished_range_flags": 2,
-        "polished_conditioned_range_flags": 0,
-        "max_original_exceedance": 3.758448285123357e-05,
-        "max_polished_gap": 4.179128154646605e-10,
-        "max_polish_adjustment": 2.5598855287497883e-07,
-        "max_polished_constraint_violation": 1.0982686982075052e-11,
+        "strict_tolerance_exceedances_after_refinement": 2,
+        "audit_tolerance_exceedances": 0,
+        "max_initial_exceedance": 3.758448285123357e-05,
+        "max_refined_gap": 4.179128154646605e-10,
+        "max_refinement_adjustment": 2.5598855287497883e-07,
+        "max_refined_constraint_violation": 1.0982686982075052e-11,
         "max_first_price_interval_deficit": 2.1965318452998872e-11,
-        "flags_within_repair_residual_d2_scale": 129,
-        "relative_flag_tolerance": 1e-05,
-        "absolute_flag_tolerance": 1e-10,
-        "polished_absolute_flag_tolerance": 1e-09,
-        "polish_solver_tolerance": 2e-11,
+        "exceedances_within_repair_residual_scale": 129,
+        "relative_tolerance": 1e-05,
+        "strict_absolute_tolerance": 1e-10,
+        "audit_absolute_tolerance": 1e-09,
+        "refinement_solver_tolerance": 2e-11,
         "audit_pass": true
       }
     }
@@ -180,7 +180,7 @@
     "audit": {
       "rows": 1364405,
       "evaluation_pair_rows": 934,
-      "bound_flags": 0,
+      "bound_exceedances": 0,
       "max_amplification_ratio": 0.9999999999999831,
       "bound_relative_tolerance": 1e-06,
       "bound_absolute_tolerance": 1e-10
@@ -195,7 +195,7 @@
         "median_d2_amplification_ratio": 0.1898276648427471,
         "p90_d2_amplification_ratio": 0.407820512820518,
         "max_d2_amplification_ratio": 0.8064238121286376,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 6.976235707134291e-18,
         "spearman_d2_vs_black_gamma": 0.5458995871533485
       },
@@ -208,7 +208,7 @@
         "median_d2_amplification_ratio": 0.3285892162955056,
         "p90_d2_amplification_ratio": 0.7100920509343611,
         "max_d2_amplification_ratio": 0.9753901941530212,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 1.440706197191426e-06,
         "spearman_d2_vs_black_gamma": 0.7920459593842963
       },
@@ -221,7 +221,7 @@
         "median_d2_amplification_ratio": 0.2502418741680672,
         "p90_d2_amplification_ratio": 0.6368146361548364,
         "max_d2_amplification_ratio": 0.9594373293036852,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 3.544171003072108e-06,
         "spearman_d2_vs_black_gamma": 0.7185931313841032
       },
@@ -234,7 +234,7 @@
         "median_d2_amplification_ratio": 0.1563574280994012,
         "p90_d2_amplification_ratio": 0.4816826745127066,
         "max_d2_amplification_ratio": 0.9314493040717058,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 5.820711352110266e-06,
         "spearman_d2_vs_black_gamma": 0.5777137792989568
       },
@@ -247,7 +247,7 @@
         "median_d2_amplification_ratio": 0.1192259131827141,
         "p90_d2_amplification_ratio": 0.3816963221057683,
         "max_d2_amplification_ratio": 0.9135278341268964,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 8.454381693947368e-06,
         "spearman_d2_vs_black_gamma": 0.3942955176154328
       },
@@ -260,7 +260,7 @@
         "median_d2_amplification_ratio": 0.1898276648427471,
         "p90_d2_amplification_ratio": 0.4166666666664468,
         "max_d2_amplification_ratio": 0.8064238121286376,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 6.976235707134291e-18,
         "spearman_d2_vs_black_gamma": 0.5458995871533485
       },
@@ -273,7 +273,7 @@
         "median_d2_amplification_ratio": 0.1195667779304938,
         "p90_d2_amplification_ratio": 0.3827719647870349,
         "max_d2_amplification_ratio": 0.9135278341268964,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 9.695447779883742e-06,
         "spearman_d2_vs_black_gamma": 0.3942955176154328
       },
@@ -286,7 +286,7 @@
         "median_d2_amplification_ratio": 0.1019777108641935,
         "p90_d2_amplification_ratio": 0.3396965217139626,
         "max_d2_amplification_ratio": 0.8812351911798414,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 7.213448812590056e-06,
         "spearman_d2_vs_black_gamma": 0.1886099324045753
       },
@@ -299,7 +299,7 @@
         "median_d2_amplification_ratio": 0.0667758227049863,
         "p90_d2_amplification_ratio": 0.3544002845729537,
         "max_d2_amplification_ratio": 0.760740669569366,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 8.094263165789989e-18,
         "spearman_d2_vs_black_gamma": 0.54795788365369
       },
@@ -312,7 +312,7 @@
         "median_d2_amplification_ratio": 0.0559372373059542,
         "p90_d2_amplification_ratio": 0.2836547598686499,
         "max_d2_amplification_ratio": 0.9701112338719986,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 2.51880628595832e-06,
         "spearman_d2_vs_black_gamma": 0.2552521146312384
       },
@@ -325,7 +325,7 @@
         "median_d2_amplification_ratio": 0.2863443543326792,
         "p90_d2_amplification_ratio": 0.6941135942719106,
         "max_d2_amplification_ratio": 0.9761863572135034,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 2.1177957261010266e-07,
         "spearman_d2_vs_black_gamma": 0.7894689577916572
       },
@@ -338,7 +338,7 @@
         "median_d2_amplification_ratio": 0.2519937161770052,
         "p90_d2_amplification_ratio": 0.6269683325579978,
         "max_d2_amplification_ratio": 0.9719305814013476,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 1.5779494869365958e-06,
         "spearman_d2_vs_black_gamma": 0.7519477985280774
       },
@@ -351,7 +351,7 @@
         "median_d2_amplification_ratio": 0.1397442880888317,
         "p90_d2_amplification_ratio": 0.4908565951715823,
         "max_d2_amplification_ratio": 0.9462847999974268,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 4.529646600612998e-06,
         "spearman_d2_vs_black_gamma": 0.6676498398337005
       },
@@ -364,7 +364,7 @@
         "median_d2_amplification_ratio": 0.1108015702774523,
         "p90_d2_amplification_ratio": 0.376185471742795,
         "max_d2_amplification_ratio": 0.9036145795745728,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 7.533202964088261e-06,
         "spearman_d2_vs_black_gamma": 0.5135134926844305
       },
@@ -377,7 +377,7 @@
         "median_d2_amplification_ratio": 0.0858693217885347,
         "p90_d2_amplification_ratio": 0.3382644703104124,
         "max_d2_amplification_ratio": 0.8576789441434989,
-        "d2_bound_flag_count": 0.0,
+        "d2_bound_exceedance_count": 0.0,
         "median_model_free_curvature_gamma_gap": 9.7978529050966e-06,
         "spearman_d2_vs_black_gamma": 0.236606305646248
       }

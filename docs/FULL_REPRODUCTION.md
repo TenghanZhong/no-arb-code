@@ -55,6 +55,6 @@ Common-scenario VaR-style cells        432
 Repair-specific VaR-style cells        417
 ```
 
-The final gate is `code/working/verify_full_rerun.py`, followed by the full
+Verification concludes with `code/analysis/verify_full_rerun.py`, followed by the full
 test suite. Exact reported values are listed in
-`manifests/expected_headlines.json`.
+`manifests/expected_results.json`.

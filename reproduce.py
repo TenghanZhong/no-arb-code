@@ -64,9 +64,9 @@ def full_environment(panel: Path, jobs: int) -> dict[str, str]:
             "REPAIR_RISK_JOBS": str(jobs),
             "PYTHONPATH": os.pathsep.join(
                 [
-                    str(ROOT / "code" / "working" / "project_src"),
-                    str(ROOT / "code" / "working" / "common"),
-                    str(ROOT / "code" / "working"),
+                    str(ROOT / "code" / "analysis" / "src"),
+                    str(ROOT / "code" / "analysis" / "common"),
+                    str(ROOT / "code" / "analysis"),
                     env.get("PYTHONPATH", ""),
                 ]
             ),
@@ -76,22 +76,22 @@ def full_environment(panel: Path, jobs: int) -> dict[str, str]:
 
 
 def full_commands(panel: Path, jobs: int) -> Iterable[list[str]]:
-    working = ROOT / "code" / "working"
-    yield [PYTHON, str(working / "preflight_full_feasibility.py")]
-    yield [PYTHON, str(working / "run_classical_18m_full.py"), "stage", "--jobs", str(jobs)]
+    analysis = ROOT / "code" / "analysis"
+    yield [PYTHON, str(analysis / "preflight_full_feasibility.py")]
+    yield [PYTHON, str(analysis / "run_classical_18m_full.py"), "all", "--jobs", str(jobs)]
     yield [
         PYTHON,
-        str(working / "paper_repo_scripts" / "run_svi_target_18m.py"),
+        str(analysis / "diagnostics" / "run_svi_target_18m.py"),
         "--output-root",
         str(ROOT / "results" / "svi_18m"),
         "--jobs",
         str(jobs),
     ]
-    yield [PYTHON, str(working / "run_targeted_nn_full.py"), "stage", "--jobs", str(jobs)]
+    yield [PYTHON, str(analysis / "run_targeted_nn_full.py"), "all", "--jobs", str(jobs)]
     yield [
         PYTHON,
-        str(working / "project_scripts" / "nnproj_seed_18m_top_audit.py"),
-        "stage",
+        str(analysis / "nnproj" / "nnproj_seed_replication.py"),
+        "all",
         "--out-root",
         str(ROOT / "results" / "nn_seed_18m"),
         "--jobs",
@@ -99,13 +99,13 @@ def full_commands(panel: Path, jobs: int) -> Iterable[list[str]]:
     ]
     yield [
         PYTHON,
-        str(working / "paper_repo_scripts" / "run_calendar_certified_robustness.py"),
+        str(analysis / "diagnostics" / "run_calendar_spread_screen.py"),
         "--panel",
         str(panel.resolve()),
         "--output-dir",
         str(ROOT / "results" / "calendar"),
     ]
-    yield [PYTHON, str(working / "run_postprocessing_full.py")]
+    yield [PYTHON, str(analysis / "run_postprocessing_full.py")]
 
 
 def command_quick() -> None:

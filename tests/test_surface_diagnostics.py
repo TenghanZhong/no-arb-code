@@ -9,7 +9,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "code" / "working" / "derive_surface_diagnostics.py"
+SCRIPT = ROOT / "code" / "analysis" / "derive_surface_diagnostics.py"
 
 
 def load_module():

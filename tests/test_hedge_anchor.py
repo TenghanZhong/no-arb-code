@@ -9,11 +9,11 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "code" / "working" / "paper_repo_scripts" / "paper_hedge_persistence.py"
+SCRIPT = ROOT / "code" / "analysis" / "diagnostics" / "hedge_persistence.py"
 
 
 def load_module():
-    name = "test_paper_hedge_persistence"
+    name = "test_hedge_persistence"
     spec = importlib.util.spec_from_file_location(name, SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -28,7 +28,7 @@ def test_signed_hedge_pair_is_scaled_by_fixed_gross_spot_notional() -> None:
         rows.append(
             {
                 "source_file": "book_outputs.parquet",
-                "run": "BTC_2024-01_top50_fullarb_v50",
+                "run": "BTC_2024-01_top50_full_constraints",
                 "currency": "BTC",
                 "month": "2024-01",
                 "slice_selection": "top",

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild artifact figures and a table source from compact final outputs."""
+"""Rebuild artifact figures and a table source from compact outputs."""
 
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ def save(fig: plt.Figure, name: str) -> None:
 
 
 def figure1() -> str:
-    script = ROOT / "code" / "working" / "paper_repo_scripts" / "draw_mechanism_overview.py"
+    script = ROOT / "code" / "analysis" / "diagnostics" / "draw_mechanism_overview.py"
     spec = importlib.util.spec_from_file_location("artifact_mechanism_figure", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Cannot load {script}")

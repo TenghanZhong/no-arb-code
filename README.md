@@ -7,18 +7,18 @@ point for the complete rerun.
 
 ## What is included
 
-- The final single-maturity repair implementation with effective price bounds,
+- The single-maturity repair implementation with effective price bounds,
   two-sided adjacent call-spread bounds, and discrete convexity.
 - Classical, SVI-target, targeted learned-repair, five-seed, LP-range,
   calendar-screen, Greek, hedge, and VaR-style analysis code.
 - Compact source data for Figures 3--6 and the reported summary statistics.
-- Pre-rendered copies of Figures 1--6 used for visual comparison.
+- Vector renderings of Figures 1--6.
 - Tests for the constraint matrix, repair pipeline, Greek convention, audit
   accounting, pair scaling, seed design, and reported summaries.
 
 The raw Deribit-derived panel and the approximately 9 GB of intermediate full
 rerun files are not included. The raw panel's byte count and SHA-256 digest are
-provided in `data/input_panel.sha256` so an authorized copy can be verified.
+provided in `data/input_panel.sha256` so a local copy can be verified.
 
 ## Quick reproduction
 
@@ -35,12 +35,11 @@ python reproduce.py verify
 summary to `generated/`. Figure 2 is compiled from its standalone TikZ source
 when `pdflatex` is available; otherwise the supplied vector rendering is copied
 with that fallback recorded in the summary. `verify` also runs the test suite,
-checks the reported quantities, and scans the repository for secrets and
-machine-local paths.
+checks the reported quantities, and validates path portability.
 
 ## Complete rerun
 
-Place the authorized panel anywhere outside or inside the repository and first
+Place the panel anywhere outside or inside the repository and first
 inspect the commands without executing them:
 
 ```bash
@@ -56,10 +55,10 @@ explicit sensitivity run. Full outputs are written to ignored `results/`,
 ## Repository layout
 
 ```text
-code/                 Final full-pipeline implementation
-config/               Frozen paper design and portable path conventions
+code/                 Full-pipeline implementation
+config/               Fixed analysis design and portable path conventions
 data/                  Input instructions and canonical panel digest
-docs/                  Full-rerun and release notes
+docs/                  Full-rerun instructions and artifact scope
 manifests/             Expected numerical checkpoints
 outputs/               Compact reproduction data, audits, and expected figures
 scripts/               Quick-output and artifact-verification utilities
@@ -79,11 +78,10 @@ reproduce.py           quick, verify, and full entry point
   spot notional.
 
 Exact machine-readable values are in `outputs/full_rerun_summary.json` and
-`manifests/expected_headlines.json`.
+`manifests/expected_results.json`.
 
-## Release hygiene
+## Artifact contents
 
-This repository is a clean reproducibility export. It excludes credentials,
-machine-local paths, raw market data, and large intermediate outputs. The
-canonical input digest and compact aggregate data preserve the link between
-the public artifact and the reported results. See `docs/RELEASE_HYGIENE.md`.
+This repository contains redistributable analysis inputs and compact outputs.
+The raw market-data panel and large intermediate outputs are excluded; its
+digest is supplied for input verification. See `docs/ARTIFACT_CONTENTS.md`.

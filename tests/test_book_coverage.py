@@ -43,7 +43,7 @@ def test_book_coverage_filters_unusable_quotes_and_checks_nextday():
     )
     next_keys = {
         ("BTC", 1000 + 86400, "BTC-GOOD-C"),
-        # Deliberately omit BTC-GOOD-P.
+        # Omit BTC-GOOD-P.
     }
 
     out = compute_book_coverage(price, AuditConfig(book_tolerance=0.02), next_keys)

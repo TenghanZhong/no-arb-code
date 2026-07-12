@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify numerical checkpoints, release structure, and repository hygiene."""
+"""Verify numerical checkpoints, artifact structure, and path portability."""
 
 from __future__ import annotations
 
@@ -24,16 +24,16 @@ def close(actual: float, expected: float, tolerance: float = 1e-8) -> None:
     require(abs(actual - expected) <= tolerance, f"expected {expected}, found {actual}")
 
 
-def verify_headlines() -> None:
-    expected = json.loads((ROOT / "manifests" / "expected_headlines.json").read_text(encoding="utf-8"))
+def verify_reported_results() -> None:
+    expected = json.loads((ROOT / "manifests" / "expected_results.json").read_text(encoding="utf-8"))
     quick = json.loads((ROOT / "generated" / "quick_summary.json").read_text(encoding="utf-8"))
     full = json.loads((ROOT / "outputs" / "full_rerun_summary.json").read_text(encoding="utf-8"))
-    lp_audit = json.loads((ROOT / "outputs" / "audits" / "lp_paper_sample_audit.json").read_text(encoding="utf-8"))
+    lp_audit = json.loads((ROOT / "outputs" / "audits" / "lp_sample_audit.json").read_text(encoding="utf-8"))
     require(quick["figure4"]["rows"] == expected["lp_range"]["observations"], "LP row count differs")
     close(quick["figure4"]["spearman"], expected["lp_range"]["spearman_rank_correlation"])
     close(quick["figure4"]["log_log_r2"], expected["lp_range"]["log_log_r2"])
     require(lp_audit["strict_check"]["exceedances"] == expected["lp_range"]["strict_tolerance_exceedances"], "strict LP audit count differs")
-    require(lp_audit["numerical_audit"]["remaining_exceedances"] == expected["lp_range"]["absolute_1e_9_exceedances"], "conditioned LP audit count differs")
+    require(lp_audit["numerical_audit"]["remaining_exceedances"] == expected["lp_range"]["absolute_1e_9_exceedances"], "LP tolerance-audit count differs")
     l2_nn = quick["figure5"]["pairs"]["L2__NNPROJ"]["median_p90_gamma_gap"]
     nn_smooth = quick["figure5"]["pairs"]["NNPROJ__SMOOTH_RHO_10"]["median_p90_gamma_gap"]
     close(l2_nn, expected["targeted_nn"]["median_p90_gamma_gap_l2_nnproj"])
@@ -46,7 +46,7 @@ def verify_structure() -> None:
     required = [
         ROOT / "README.md",
         ROOT / "environment.yml",
-        ROOT / "config" / "paper_design.json",
+        ROOT / "config" / "analysis_design.json",
         ROOT / "data" / "input_panel.sha256",
         ROOT / "outputs" / "full_rerun_summary.json",
         ROOT / "generated" / "quick_summary.json",
@@ -96,7 +96,7 @@ def text_files():
             yield path
 
 
-def verify_release_hygiene() -> None:
+def verify_artifact_portability() -> None:
     identity_patterns = [
         re.compile(pattern, re.IGNORECASE)
         for pattern in (
@@ -127,9 +127,9 @@ def verify_release_hygiene() -> None:
 def main() -> None:
     verify_structure()
     verify_output_checksums()
-    verify_headlines()
-    verify_release_hygiene()
-    print("Artifact verification passed: structure, numerical checkpoints, and release hygiene.")
+    verify_reported_results()
+    verify_artifact_portability()
+    print("Artifact verification passed: structure, numerical checkpoints, and path portability.")
 
 
 if __name__ == "__main__":

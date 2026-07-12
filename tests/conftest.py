@@ -6,9 +6,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 for path in (
-    ROOT / "code" / "working" / "project_src",
-    ROOT / "code" / "working" / "common",
-    ROOT / "code" / "working",
+    ROOT / "code" / "analysis" / "src",
+    ROOT / "code" / "analysis" / "common",
+    ROOT / "code" / "analysis",
 ):
     value = str(path)
     if value not in sys.path:

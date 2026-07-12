@@ -1,0 +1,20 @@
+{
+  "sample": {
+    "source_family": "classical_selected_slices",
+    "pair_label": "L2_vs_SMOOTH_RHO_10",
+    "selection": "top",
+    "range_status": "ok",
+    "observations": 51189
+  },
+  "strict_check": {
+    "criterion": "abs_gap > feasible_range * (1 + 1e-5) + 1e-10",
+    "exceedances": 57,
+    "maximum_exceedance": 1.0231541339844291e-05
+  },
+  "numerical_audit": {
+    "rows_recomputed": 57,
+    "absolute_tolerance": 1e-09,
+    "remaining_exceedances": 0,
+    "maximum_refined_gap": 4.501998773775995e-11
+  }
+}

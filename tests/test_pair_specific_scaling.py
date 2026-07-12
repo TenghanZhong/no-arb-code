@@ -10,7 +10,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "code" / "working" / "common" / "pairwise_metrics.py"
+SCRIPT = ROOT / "code" / "analysis" / "common" / "pairwise_metrics.py"
 
 
 def load_module():
