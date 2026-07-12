@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""Matched repair-risk analysis with an optional learned repair target.
-
-The pipeline applies L1, L2, smoothness-regularized, and NN-Proj repairs to a
-common call-equivalent quote panel. It reports strike-level curvature and Greek
-gaps, standardized-book hedge differences, VaR-style estimates, common-support
-diagnostics, and top/random/bottom slice-selection comparisons.
-
-L1 is solved with ``scipy.optimize.linprog``. L2, smoothness-regularized, and
-projected learned-target repairs use convex quadratic programming through
-CVXPY with OSQP or Clarabel.
-"""
+"""Repair-risk analysis with an optional learned target."""
 
 from __future__ import annotations
 
@@ -64,11 +54,11 @@ class RepairConfig:
     currency: str = "BTC"
     snapshot_hour: int = 12
 
-    # Repair universe. These are the chains repaired at time t.
+    # Chains repaired at time t.
     dte_min_repair: float = 2.0
     dte_max_repair: float = 30.0
 
-    # Marking universe. This must be wider because t+1 quotes have lower DTE.
+    # Wider DTE range for t+1 marking.
     dte_min_marking: float = 0.0
     dte_max_marking: float = 31.0
     marking_extra_days: int = 1
@@ -102,12 +92,12 @@ class RepairConfig:
     gamma_rr_threshold: float = 0.20
     price_diff_box_threshold: float = 0.25
 
-    # Slice-ranking score: relspread_h2 or abs_spread_h2.
+    # Slice-ranking score.
     ranking_score_method: str = "relspread_h2"
-    ranking_slice_agg: str = "max"  # max, p90, median
+    ranking_slice_agg: str = "max"
     max_slices: Optional[int] = None
     selected_slices: Optional[int] = None
-    slice_selection: str = "top"  # top, bottom, random
+    slice_selection: str = "top"
     random_state: int = 7
     require_all_arms_for_main: bool = True
 
@@ -154,12 +144,7 @@ def month_mask(epoch_seconds: pd.Series, months: Sequence[str]) -> pd.Series:
 
 
 def month_mask_with_extra_days(epoch_seconds: pd.Series, months: Sequence[str], extra_days: int = 0) -> pd.Series:
-    """Mask rows in selected calendar months, optionally including extra days after month-end.
-
-    This is required for next-day marking. If the repair window is YYYY-MM,
-    marking must include the first day of the next month so that t+1 quotes are not
-    silently removed at month boundaries.
-    """
+    """Select months and optional post-month-end days for t+1 marking."""
     if not months:
         return pd.Series(True, index=epoch_seconds.index)
     dt = pd.to_datetime(epoch_seconds.astype("int64"), unit="s", utc=True)
@@ -247,10 +232,7 @@ def implied_vol_from_base_call_scalar(c: float, F: float, K: float, tau: float,
 
 
 def usd_spot_greeks_from_iv(claim: str, X: float, F: float, K: float, tau: float, sigma: float) -> Tuple[float, float, float]:
-    """USD-premium spot delta/gamma/vega under fixed carry.
-
-    This convention matches the Deribit Greek checks on liquid ATM rows.
-    """
+    """USD-premium spot delta, gamma, and vega under fixed carry."""
     if not all(np.isfinite(v) for v in [X, F, K, tau, sigma]) or X <= 0 or F <= 0 or K <= 0 or tau <= 0 or sigma <= 0:
         return np.nan, np.nan, np.nan
     vol_sqrt = sigma * math.sqrt(tau)
@@ -270,12 +252,7 @@ def usd_spot_greeks_from_iv(claim: str, X: float, F: float, K: float, tau: float
 def load_synthetic_panel(path: str | Path, cfg: RepairConfig, months: Sequence[str],
                          *, dte_min: float, dte_max: float,
                          extra_days: int = 0) -> pd.DataFrame:
-    """Load a call-equivalent quote panel with explicit DTE and month controls.
-
-    Repair and marking panels are loaded separately:
-      - repair panel: selected months, repair DTE range;
-      - marking panel: selected months + one extra day, wider marking DTE range.
-    """
+    """Load a call-equivalent quote panel for a specified DTE window."""
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(path)
@@ -308,13 +285,7 @@ def load_synthetic_panel(path: str | Path, cfg: RepairConfig, months: Sequence[s
 
 
 def add_state_flags_base(panel: pd.DataFrame, cfg: RepairConfig) -> pd.DataFrame:
-    """Compute state variables ONCE on the base panel.
-
-    The ranking score is defined by:
-        abs_spread_h2 = (C_ask - C_bid) / h_abs^2
-        relspread_h2 = relspread_floor / h_norm^2
-    These scores target the finite-difference amplification channel epsilon / h^2.
-    """
+    """Compute slice-ranking state variables on the base panel."""
     df = panel.copy()
     if "relspread_floor" not in df.columns:
         df["relspread_floor"] = (df["C_ask"] - df["C_bid"]) / np.maximum(df["C_mid"].abs(), cfg.price_floor)
@@ -381,11 +352,7 @@ def slice_key_cols() -> List[str]:
 
 
 def select_repair_slices(panel_full: pd.DataFrame, cfg: RepairConfig) -> pd.DataFrame:
-    """Select the repair universe while preserving panel_full for marking.
-
-    Rank slices by the selected spread-over-mesh score rather than the
-    threshold-based spread-and-spacing screen.
-    """
+    """Select repair slices by the configured spread-over-mesh score."""
     df = panel_full.copy()
     grp = df.groupby(slice_key_cols(), sort=False)
     agg_func = cfg.ranking_slice_agg.lower()
@@ -549,10 +516,10 @@ def prepare_slice_arrays(slc: pd.DataFrame, cfg: RepairConfig) -> Dict[str, np.n
     ask_raw = slc["C_ask"].to_numpy(dtype=float)
     mid_raw = slc["C_mid"].to_numpy(dtype=float)
     intrinsic = np.maximum(1.0 - K / F, 0.0)
-    # Keep raw box for diagnostics, but enforce intrinsic/upper via admissible c bounds.
+    # Retain quoted bounds for diagnostics; enforce effective price bounds.
     bid = np.nan_to_num(bid_raw, nan=0.0, neginf=0.0, posinf=1.0)
     ask = np.nan_to_num(ask_raw, nan=1.0, neginf=0.0, posinf=1.0)
-    # If raw ask < bid due to a bad row, make the box elastic around midpoint.
+    # Collapse inverted quoted intervals to their midpoint.
     bad = ask < bid
     if np.any(bad):
         m = 0.5 * (ask[bad] + bid[bad])
@@ -562,7 +529,7 @@ def prepare_slice_arrays(slc: pd.DataFrame, cfg: RepairConfig) -> Dict[str, np.n
     mid = np.minimum(np.maximum(mid, 0.0), 1.0)
     scale = np.maximum(ask - bid, cfg.price_floor)
     x_norm = K / np.nanmedian(F)
-    # weights: tight boxes matter more; clipped to avoid one quote dominating.
+    # Clip inverse-width weights to limit single-quote influence.
     w_l1 = 1.0 / scale
     w_l2 = 1.0 / (scale ** 2)
     lo_q, hi_q = np.nanquantile(w_l2, [cfg.weight_clip_q_low, cfg.weight_clip_q_high])
@@ -572,11 +539,7 @@ def prepare_slice_arrays(slc: pd.DataFrame, cfg: RepairConfig) -> Dict[str, np.n
 
 
 def solve_l1(arr: Dict[str, np.ndarray], cfg: RepairConfig) -> Dict:
-    """Solve L1 projection.
-
-    Default is a STRICT bid-ask box so L1/L2/Smooth share the same admissible set.
-    If cfg.elastic_box=True, uses an elastic box with common slack penalty.
-    """
+    """Solve the L1 projection with a common or elastic bid--ask box."""
     K, bid, ask, mid, intrinsic, scale, x_norm = (
         arr[k] for k in ["K", "bid", "ask", "mid", "intrinsic", "scale", "x_norm"]
     )
@@ -586,7 +549,6 @@ def solve_l1(arr: Dict[str, np.ndarray], cfg: RepairConfig) -> Dict:
         upper = np.minimum(1.0, ask)
         if np.any(lower > upper + 1e-12):
             return {"success": False, "status": "hard_box_empty", "message": "lower bound exceeds upper bound", "c": None}
-        # variables: c[n], u[n]
         N = 2 * n
         c_obj = np.zeros(N)
         c_obj[n:2*n] = arr["w_l1"]
@@ -613,7 +575,7 @@ def solve_l1(arr: Dict[str, np.ndarray], cfg: RepairConfig) -> Dict:
         success = bool(ver["verified_feasible"])
         return {"success": success, "status": str(res.status), "message": res.message, "objective": float(res.fun), "c": c, **ver}
 
-    # Elastic L1 path for stress diagnostics. Reported runs use the strict box.
+    # Elastic-box L1 diagnostic.
     N = 4 * n
     c_obj = np.zeros(N)
     c_obj[n:2*n] = arr["w_l1"]
@@ -691,11 +653,7 @@ def solve_qp_like(arr: Dict[str, np.ndarray], cfg: RepairConfig, arm: str, l1_c:
                   target_weights: Optional[np.ndarray] = None,
                   smooth_rho: Optional[float] = None,
                   cfg_override: Optional[RepairConfig] = None) -> Dict:
-    """Solve L2 / Smooth / target-projection QP.
-
-    `target_mid` lets broader pipeline arms first create a smoothed/filtered/model target,
-    then project that target onto the certified no-arbitrage set.
-    """
+    """Solve an L2, smoothness, or target-projection QP."""
     cfg2 = cfg_override or cfg
     K, bid, ask, mid0, intrinsic, x_norm = (arr[k] for k in ["K", "bid", "ask", "mid", "intrinsic", "x_norm"])
     n = len(K)
@@ -752,7 +710,7 @@ def solve_qp_like(arr: Dict[str, np.ndarray], cfg: RepairConfig, arm: str, l1_c:
                 continue
         return {"success": False, "status": "cvxpy_failed", "message": last_msg or "No installed cvxpy solver succeeded", "c": None}
 
-    # Optional SciPy fallback.
+    # SciPy fallback.
     lower = np.maximum(intrinsic, bid) if not cfg2.elastic_box else intrinsic
     upper = np.minimum(1.0, ask) if not cfg2.elastic_box else np.ones(n)
     if np.any(lower > upper + 1e-12):
@@ -784,11 +742,7 @@ def solve_qp_like(arr: Dict[str, np.ndarray], cfg: RepairConfig, arm: str, l1_c:
 
 
 def solve_budget_smoothing(arr: Dict[str, np.ndarray], cfg: RepairConfig, budget: float, l1_c: Optional[np.ndarray]) -> Dict:
-    """Minimize curvature subject to no-arb, strict box, and |c-mid| <= budget * box_width.
-
-    This arm directly answers: within a fixed bid-ask displacement budget, how much can a
-    reasonable smoothing preference move downstream Greeks?
-    """
+    """Minimize curvature under no-arbitrage, quote-box, and displacement constraints."""
     K, bid, ask, mid, intrinsic, x_norm = (arr[k] for k in ["K", "bid", "ask", "mid", "intrinsic", "x_norm"])
     n = len(K)
     D2 = second_diff_matrix(x_norm)
@@ -803,7 +757,7 @@ def solve_budget_smoothing(arr: Dict[str, np.ndarray], cfg: RepairConfig, budget
     c = cp.Variable(n)
     full_A, full_b, _ = build_full_constraint_matrix(x_norm)
     constraints = [c >= lower, c <= upper, full_A @ c <= full_b]
-    # Tiny quote-fit term breaks ties without dominating curvature.
+    # Small quote-fit term breaks curvature ties.
     obj = cp.sum_squares(D2 @ c) + 1e-6 * cp.sum(cp.multiply(arr["w_l2"], cp.square(c - mid)))
     prob = cp.Problem(cp.Minimize(obj), constraints)
     solver_order = [cfg.qp_solver.upper()] if cfg.qp_solver.lower() != "auto" else ["OSQP", "CLARABEL", "ECOS", "SCS"]
@@ -837,7 +791,7 @@ def filtered_weights_for_slice(slc: pd.DataFrame, arr: Dict[str, np.ndarray], cf
         if col in slc.columns:
             vals = pd.to_numeric(slc[col], errors="coerce").to_numpy(dtype=float)
             bad |= np.isfinite(vals) & (vals <= 0)
-    # Do not remove all quote information.
+    # Preserve at least one quote term.
     if bad.sum() >= len(bad) - 2:
         bad = rel >= np.nanquantile(rel, 0.90)
     w[bad] = cfg.filter_bad_weight * np.nanmedian(w[~bad]) if np.any(~bad) else cfg.filter_bad_weight * np.nanmedian(w)
@@ -1053,7 +1007,7 @@ def compute_greeks(surfaces: pd.DataFrame) -> pd.DataFrame:
         tmp["delta_put_usd"] = put_delta
         tmp["gamma_usd"] = gamma
         tmp["vega_usd"] = vega
-        # density proxy. For comparisons only; risk-neutral density normalization is not used as physical VaR.
+        # Local curvature proxy without density normalization.
         tmp["rnd_proxy"] = np.maximum(c_kk * tmp["underlyer_spot"].to_numpy(dtype=float), 0.0)
         rows.append(tmp)
     return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
@@ -1175,7 +1129,7 @@ def compute_book_outputs(greeks: pd.DataFrame, panel_full: pd.DataFrame, cfg: Re
     if greeks.empty:
         return pd.DataFrame()
     rows = []
-    # Base slices must not be arm-duplicated.
+    # One row per base slice.
     base_cols = ["currency", "date", "expiration_date", "strike", "forward_price", "underlyer_spot", "tau", "DTE", "k", "C_mid"]
     base = panel_full[base_cols].drop_duplicates(["currency", "date", "expiration_date", "strike"])
 
@@ -1186,7 +1140,7 @@ def compute_book_outputs(greeks: pd.DataFrame, panel_full: pd.DataFrame, cfg: Re
             if legs is None:
                 continue
             next_date = int(date) + SECONDS_PER_DAY
-            # Precompute common mark at t and t+1.
+            # Common marks at t and t+1.
             common_t = []
             common_tp1 = []
             for leg in legs:
@@ -1203,7 +1157,7 @@ def compute_book_outputs(greeks: pd.DataFrame, panel_full: pd.DataFrame, cfg: Re
                 V_common_t = sum(leg["qty"] * m["price_usd"] for leg, m in zip(legs, common_t))
                 V_common_tp1 = sum(leg["qty"] * m["price_usd"] for leg, m in zip(legs, common_tp1))
                 X_tp1 = float(common_tp1[0]["X"])
-            # Arm-specific repaired valuation and hedge.
+            # Repair-specific valuation and hedge.
             g_slice = greeks[(greeks["currency"] == currency) & (greeks["date"] == date) & (greeks["expiration_date"] == expiration)]
             for arm, g_arm in g_slice.groupby("arm", sort=False):
                 V_rep_usd = 0.0
@@ -1306,7 +1260,7 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
     n_slices = len(panel_repair.groupby(slice_key_cols())) if len(panel_repair) else 0
     success_rate = successes / attempted if attempted else np.nan
 
-    # Complete slices: all requested arms successful.
+    # Slices with all requested arms.
     complete = np.nan
     if len(diag):
         ok = diag[diag["success"]].groupby(slice_key_cols())["arm"].nunique()
@@ -1389,7 +1343,7 @@ def make_figures(strike_disp: pd.DataFrame, book_disp: pd.DataFrame, greeks: pd.
         plt.savefig(fig_dir / "fig1_fan_price_vs_gamma_scaled.png", dpi=180)
         plt.close()
 
-        # State heatmap table plotted as bars for compactness.
+        # Compact state-summary table.
         tmp = strike_disp.copy()
         tmp["state"] = np.where(tmp["high_score_cell"], "high_score", "other")
         agg = tmp.groupby("state")["gamma_diff_scaled"].agg(["median", lambda x: np.nanpercentile(x, 90)]).rename(columns={"<lambda_0>": "p90"})
@@ -1401,7 +1355,7 @@ def make_figures(strike_disp: pd.DataFrame, book_disp: pd.DataFrame, greeks: pd.
         plt.savefig(fig_dir / "fig2_high_score_vs_other_gamma.png", dpi=180)
         plt.close()
 
-        # Case study: maximum material small-price-large-gamma if available, else max gamma_scaled.
+        # Select the largest qualifying gamma gap.
         cand = strike_disp[strike_disp["small_price_large_gamma"]].copy()
         if cand.empty:
             cand = strike_disp.copy()
@@ -1451,7 +1405,7 @@ def expand_arms_from_args(args: argparse.Namespace) -> Tuple[str, ...]:
         arms.extend(["FILTER_L2", "IVSPLINE", "SVI", "ELASTIC_L2"])
     if args.add_arms:
         arms.extend([a.upper() for a in args.add_arms])
-    # stable de-duplication
+    # Stable deduplication.
     seen = set()
     out = []
     for a in arms:
@@ -1638,15 +1592,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
 
 # =============================================================================
-# Certified-analysis definitions
+# Analysis extensions
 # =============================================================================
-# The functions below extend the solver primitives with:
-#   - minimum-support status checks;
-#   - interior-strike ranking scores;
-#   - arm-pair support summaries;
-#   - C_xx/RND metrics in strike dispersion;
-#   - spread-weighted vs true filter-relaxed arms;
-#   - local diagnostic book and optional pipeline-mark P&L.
 
 
 def _cfg_get(cfg: RepairConfig, name: str, default):
@@ -1655,7 +1602,7 @@ def _cfg_get(cfg: RepairConfig, name: str, default):
 
 def verify_solution(c: np.ndarray, bid: np.ndarray, ask: np.ndarray, intrinsic: np.ndarray, x_norm: np.ndarray,
                     tol: float = 2e-6, price_floor: float = 0.0005) -> Dict[str, float | bool]:
-    """Certify the complete strike-shape set and report quote-box residuals."""
+    """Check effective price bounds, call-spread bounds, and convexity."""
     c = np.asarray(c, dtype=float)
     bid = np.asarray(bid, dtype=float)
     ask = np.asarray(ask, dtype=float)
@@ -1704,8 +1651,7 @@ def prepare_slice_arrays(slc: pd.DataFrame, cfg: RepairConfig) -> Dict[str, np.n
     bad_inverted = np.isfinite(bid) & np.isfinite(ask) & (ask < bid)
     bad_box_count = int(np.sum(bad_nonfinite | bad_inverted))
 
-    # Preserve exploratory-run diagnostics while counting invalid boxes. The
-    # Input validation expects no residual interval violations.
+    # Count invalid intervals before repairing their bounds.
     bid = np.where(np.isfinite(bid), bid, 0.0)
     ask = np.where(np.isfinite(ask), ask, 1.0)
     if np.any(ask < bid):
@@ -1784,8 +1730,7 @@ def add_state_flags_base(panel: pd.DataFrame, cfg: RepairConfig) -> pd.DataFrame
     method = cfg.ranking_score_method.lower()
     df["ranking_score"] = df["ranking_score_abs_h2"] if method == "abs_spread_h2" else df["ranking_score_rel_h2"]
 
-    # The theorem-aligned curvature proxy is not reliable at edge strikes, where
-    # central second differences are unavailable. Exclude them from score-based ranking.
+    # Rank only interior strikes with defined central curvature.
     invalid_ranking = df["edge_strike"].astype(bool) | (~np.isfinite(df["h_norm"])) | (df["h_norm"] <= 0)
     df.loc[invalid_ranking, ["ranking_score", "ranking_score_abs_h2", "ranking_score_rel_h2"]] = np.nan
 
@@ -1797,13 +1742,7 @@ def add_state_flags_base(panel: pd.DataFrame, cfg: RepairConfig) -> pd.DataFrame
 
 
 def select_repair_slices(panel_full: pd.DataFrame, cfg: RepairConfig, panel_helper: Optional[pd.DataFrame] = None) -> pd.DataFrame:
-    """Select repair slices by the finite interior-strike ranking score.
-
-    If cfg.include_nextday_repair_slices is true, also include t+1 same-expiry
-    helper slices. These helper slices are marked core_repair_slice=False so the
-    main strike summaries can stay focused on the selected t slices while pipeline
-    P&L can use repaired next-day marks.
-    """
+    """Select repair slices and optional t+1 marking helpers."""
     df = panel_full.copy()
     grp = df.groupby(slice_key_cols(), sort=False)
     agg_func = _cfg_get(cfg, "ranking_slice_agg", "p90").lower()
@@ -1869,7 +1808,7 @@ def _filtered_bad_mask_for_slice(slc: pd.DataFrame, cfg: RepairConfig) -> np.nda
     rel = pd.to_numeric(slc.get("relspread_floor", pd.Series(np.nan, index=slc.index)), errors="coerce").to_numpy(dtype=float)
     thr = np.nanquantile(rel, cfg.filter_spread_quantile) if np.isfinite(rel).sum() >= 3 else np.nan
     bad = np.isfinite(rel) & np.isfinite(thr) & (rel >= thr)
-    # Use volume and open interest when available; otherwise use spread only.
+    # Prefer volume and open interest; fall back to spread.
     for col in ["volume", "open_interest"]:
         if col in slc.columns:
             vals = pd.to_numeric(slc[col], errors="coerce").fillna(0).to_numpy(dtype=float)
@@ -1878,12 +1817,7 @@ def _filtered_bad_mask_for_slice(slc: pd.DataFrame, cfg: RepairConfig) -> np.nda
 
 
 def solve_filter_relaxed_l2(arr: Dict[str, np.ndarray], slc: pd.DataFrame, cfg: RepairConfig, l1_c: Optional[np.ndarray]) -> Dict:
-    """True filtering-style arm: downweight bad quotes and relax their box constraints.
-
-    Good quotes keep high slack penalties. Bad quotes, defined by wide spread and
-    optionally zero volume/OI, receive both low objective weight and low box-slack
-    penalty, mimicking a desk-style quote-cleaning step before projection.
-    """
+    """Downweight flagged quotes and relax their box constraints."""
     try:
         import cvxpy as cp  # type: ignore
     except Exception:
@@ -1979,7 +1913,6 @@ def solve_slice_repairs(slc: pd.DataFrame, cfg: RepairConfig) -> Tuple[pd.DataFr
     key_vals = {c: slc.iloc[0][c] for c in slice_key_cols()}
     diag_rows, surface_rows = [], []
     for arm, sol in solutions.items():
-        # Optional strict treatment of optimal_inaccurate.
         if _cfg_get(cfg, "exclude_optimal_inaccurate", False) and str(sol.get("status", "")).lower() == "optimal_inaccurate":
             sol = dict(sol)
             sol["success"] = False
@@ -2027,7 +1960,7 @@ def compute_strike_pairwise_dispersion(greeks: pd.DataFrame, cfg: RepairConfig) 
         return pd.DataFrame()
     rows = []
     group_cols = slice_key_cols() + ["strike"]
-    # Precompute robust slice-level scales once.
+    # Slice-level scales.
     scale_map = {}
     for skey, s in greeks.groupby(slice_key_cols(), sort=False):
         def medabs(col):
@@ -2130,9 +2063,7 @@ def compute_book_outputs(greeks: pd.DataFrame, panel_full: pd.DataFrame, cfg: Re
     rows = []
     base_cols = ["currency", "date", "expiration_date", "strike", "forward_price", "underlyer_spot", "tau", "DTE", "k", "C_mid", "ranking_score", "edge_strike"]
     base_cols = [c for c in base_cols if c in panel_full.columns]
-    # Only construct book outputs for core repair slices. If next-day helper slices are
-    # repaired for pipeline-mark P&L, they stay in repaired_lookup below but are not
-    # treated as ordinary t slices in book summaries.
+    # Summarize core slices; retain helper slices only for t+1 marks.
     if "core_repair_slice" in greeks.columns:
         core_slice_keys = greeks.loc[greeks["core_repair_slice"].astype(bool), slice_key_cols()].drop_duplicates()
     else:
@@ -2186,7 +2117,7 @@ def compute_book_outputs(greeks: pd.DataFrame, panel_full: pd.DataFrame, cfg: Re
                     gamma += leg["qty"] * gma
                 if not leg_ok:
                     continue
-                # Pipeline mark at t+1, if that slice/arm was also repaired.
+                # Repair-specific t+1 mark.
                 pm_available = True
                 vpm = 0.0
                 for leg in legs:
@@ -2336,7 +2267,6 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
     if len(diag):
         ok = diag[diag["success"]].groupby(slice_key_cols())["arm"].nunique()
         complete = float((ok >= len(requested_arms)).mean()) if len(ok) else 0.0
-    # Main summaries use core repair slices only when helper next-day slices are present.
     strike_main = strike_disp[strike_disp.get("core_repair_slice", pd.Series(True, index=strike_disp.index)).astype(bool)] if len(strike_disp) else pd.DataFrame()
     high_score = strike_main[strike_main.get("high_score_cell", False).astype(bool)] if len(strike_main) and "high_score_cell" in strike_main else pd.DataFrame()
     summary = {
@@ -2406,7 +2336,7 @@ def expand_arms_from_args(args) -> Tuple[str, ...]:
         arms.append(a.upper())
     if getattr(args, "include_broader_arms", False):
         arms.extend(["SPREAD_WEIGHTED_L2", "FILTER_RELAXED_L2", "IVSPLINE", "SVI", "ELASTIC_L2"])
-    # Map FILTER_L2 to the weighted L2 implementation.
+    # FILTER_L2 uses weighted L2.
     arms = ["SPREAD_WEIGHTED_L2" if a == "FILTER_L2" else a for a in arms]
     seen, out = set(), []
     for a in arms:
@@ -2488,7 +2418,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         random_state=args.random_state, hedge_tc_bps=args.hedge_tc_bps,
         require_all_arms_for_main=not args.allow_partial_arms,
     )
-    # Additional runtime fields.
     cfg.include_nextday_repair_slices = bool(args.include_nextday_repair_slices)
     cfg.exclude_optimal_inaccurate = bool(args.exclude_optimal_inaccurate)
     cfg.min_analysis_slices = int(args.min_analysis_slices)
@@ -2613,24 +2542,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # Hedge and curvature diagnostics
 # =============================================================================
-# This section adds three diagnostic outputs:
-#   1. Hedge slippage and gamma-P&L proxy in book_pairwise_dispersion.csv.
-#   2. A scaled-only gamma event, separate from the joint gamma diagnostic.
-#   3. Threshold-screen versus ranking-score comparison output.
 # Repair solvers remain unchanged.
 
 
 def compute_strike_pairwise_dispersion(greeks: pd.DataFrame, cfg: RepairConfig) -> pd.DataFrame:
-    """Compute pairwise strike-level dispersion diagnostics.
-
-    Key event definitions:
-      - small_price_large_gamma:
-          price_diff_box < threshold AND gamma_rr > threshold AND gamma_diff_scaled > threshold.
-      - small_price_large_gamma_scaled:
-          price_diff_box < threshold AND gamma_diff_scaled > threshold.
-      - small_price_large_curvature:
-          price_diff_box < threshold AND cxx_diff_scaled > threshold.
-    """
+    """Compute pairwise strike-level dispersion diagnostics."""
     if greeks.empty:
         return pd.DataFrame()
     rows = []
@@ -2722,13 +2638,7 @@ def compute_strike_pairwise_dispersion(greeks: pd.DataFrame, cfg: RepairConfig) 
 
 
 def compute_book_pairwise_dispersion(book_outputs: pd.DataFrame) -> pd.DataFrame:
-    """Book-level pairwise dispersion with hedge-channel outcomes.
-
-    Adds two downstream variables that align with the Greek-amplification thesis:
-      hedge_slippage_scaled = |h_a-h_b| |S_{t+1}-S_t| / Scale_t
-      gamma_pnl_proxy      = 0.5 |Gamma_a-Gamma_b| (S_{t+1}-S_t)^2 / Scale_t
-    Scale_t is the common book value when available, else repaired book value, floored at 1 USD.
-    """
+    """Compute book-level hedge slippage and gamma P&L proxies."""
     if book_outputs.empty:
         return pd.DataFrame()
     rows = []
@@ -2932,7 +2842,7 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
     summary["curvature_signal"] = bool(
         summary["pass_sample_size"] and summary["pass_curvature_scaled"] and summary["pass_small_price_large_curvature"]
     )
-    # Combined indicator for the joint-gamma, scaled-hedge, and curvature signals.
+    # Union of diagnostic signals.
     summary["analysis_signal"] = bool(
         summary["joint_gamma_signal"] or summary["scaled_hedge_signal"] or summary["curvature_signal"]
     )
@@ -3091,8 +3001,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # Slice-selection controls and coverage summaries
 # =============================================================================
-# Supports top, bottom, and random slice selection with fixed-size matched sets,
-# selected-slice metadata, and coverage-filtered book summaries.
 
 
 def _finite_scores(s: pd.Series) -> pd.Series:
@@ -3146,11 +3054,7 @@ def audit_full_slice_feasibility(panel: pd.DataFrame, cfg: RepairConfig) -> pd.D
 
 
 def select_repair_slices(panel_full: pd.DataFrame, cfg: RepairConfig, panel_helper: Optional[pd.DataFrame] = None) -> pd.DataFrame:
-    """Select top, bottom, or random slices from the eligible analysis pool.
-
-    When next-day helper slices are requested, they are included for marking
-    lookup and identified by ``core_repair_slice=False``.
-    """
+    """Select repair slices and optional t+1 marking helpers."""
     df = panel_full.copy()
     grp = df.groupby(slice_key_cols(), sort=False)
     agg_func = _cfg_get(cfg, "ranking_slice_agg", "p90").lower()
@@ -3190,11 +3094,10 @@ def select_repair_slices(panel_full: pd.DataFrame, cfg: RepairConfig, panel_help
     if slice_stats.empty:
         return df.iloc[0:0].copy()
 
-    # Stable ranks and quantiles over the eligible set before selecting.
+    # Rank eligible slices before selection.
     slice_stats = slice_stats.sort_values("ranking_score", ascending=False).reset_index(drop=True)
     slice_stats["slice_rank_desc"] = np.arange(1, len(slice_stats) + 1)
     slice_stats["slice_rank_asc"] = len(slice_stats) - slice_stats["slice_rank_desc"] + 1
-    # Higher quantiles correspond to higher ranking scores.
     if len(slice_stats) > 1:
         slice_stats["slice_ranking_quantile"] = 1.0 - (slice_stats["slice_rank_desc"] - 1) / (len(slice_stats) - 1)
     else:
@@ -3219,10 +3122,10 @@ def select_repair_slices(panel_full: pd.DataFrame, cfg: RepairConfig, panel_help
         else:
             slice_stats = slice_stats.sort_values("ranking_score", ascending=False).head(n_take)
     elif selection == "bottom":
-        # Without a slice cap, bottom/all is ill-defined as a contrast; keep all but preserve metadata.
+            # No cap: retain all eligible slices.
         slice_stats = slice_stats.sort_values("ranking_score", ascending=True)
     elif selection == "random":
-        # Without a slice cap, preserve all eligible slices.
+        # No cap: retain all eligible slices.
         slice_stats = slice_stats.sample(frac=1.0, random_state=int(_cfg_get(cfg, "random_state", 7)))
     else:
         slice_stats = slice_stats.sort_values("ranking_score", ascending=False)
@@ -3335,7 +3238,7 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
         summary["book_nextday_pair_rate"] = float(np.nanmean(book_disp["nextday_available"]))
         summary["book_pipeline_nextday_pair_rate"] = float(np.nanmean(book_disp.get("pipeline_nextday_available", pd.Series(False, index=book_disp.index))))
         for thr in (0.70, 0.80, 0.90):
-            # Keep rows only from books whose pairwise observations are sufficiently next-day-covered.
+    # Apply next-day coverage by book.
             if "book" in book_disp.columns and "nextday_available" in book_disp.columns:
                 rates = book_disp.groupby("book")["nextday_available"].mean()
                 keep_books = set(rates[rates >= thr].index)
@@ -3370,8 +3273,7 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
     summary["pass_small_price_large_gamma"] = bool(finite(summary.get("high_score_small_price_large_gamma_rate"), 0.0) > 0.0)
     summary["pass_small_price_large_gamma_scaled"] = bool(finite(summary.get("high_score_small_price_large_gamma_scaled_rate"), 0.0) > 0.0)
     summary["pass_small_price_large_curvature"] = bool(finite(summary.get("high_score_small_price_large_curvature_rate"), 0.0) > 0.0)
-    # The scaled-hedge criterion is primary. Curvature remains a mechanism
-    # diagnostic because pointwise C_xx/RND ratios can be denominator-sensitive.
+    # Pointwise curvature ratios can be denominator-sensitive.
     summary["joint_gamma_signal"] = bool(
         summary["pass_sample_size"] and summary["pass_greek_rr"] and summary["pass_material_scaled"] and summary["pass_small_price_large_gamma"]
     )
@@ -3468,7 +3370,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         random_state=args.random_state, hedge_tc_bps=args.hedge_tc_bps,
         require_all_arms_for_main=not args.allow_partial_arms,
     )
-    # Attach runtime fields used by the analysis entry point.
     cfg.include_nextday_repair_slices = args.include_nextday_repair_slices
     cfg.exclude_optimal_inaccurate = args.exclude_optimal_inaccurate
     cfg.min_analysis_slices = args.min_analysis_slices
@@ -3603,28 +3504,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # Book-level hedge diagnostics
 # =============================================================================
-# Adds threshold-based book metrics without changing the repair solvers.
 
 
 def compute_book_pairwise_dispersion(book_outputs: pd.DataFrame) -> pd.DataFrame:
-    """Book-level pairwise dispersion with hedge-channel decision outcomes.
-
-    Reported fields:
-      hedge_slippage_scaled  = |h_a-h_b| |S_{t+1}-S_t| / Scale_t
-      gamma_pnl_proxy       = .5 |Gamma_a-Gamma_b| (S_{t+1}-S_t)^2 / Scale_t
-      hedge_notional_scaled = |hedge| S_t / Scale_t
-      hedge_trigger_flip_*  = pairwise crossing of hedge-notional / scale thresholds.
-      hedge_slippage_gt_*   = pairwise slippage event rates.
-      gamma_pnl_proxy_gt_*  = pairwise gamma-proxy event rates.
-
-    """
+    """Compute book-level hedge and threshold diagnostics."""
     if book_outputs.empty:
         return pd.DataFrame()
     rows = []
-    trigger_thresholds = (0.5, 1.0, 2.0)       # |hedge|*S / book scale
-    diff_thresholds = (0.05, 0.10, 0.25)       # |delta hedge|*S / book scale
-    slippage_thresholds = (0.01, 0.05, 0.10)   # realized next-step slippage / scale
-    gamma_pnl_thresholds = (0.01, 0.05, 0.10)  # gamma proxy / scale
+    trigger_thresholds = (0.5, 1.0, 2.0)       # Hedge notional / book scale.
+    diff_thresholds = (0.05, 0.10, 0.25)       # Hedge difference / book scale.
+    slippage_thresholds = (0.01, 0.05, 0.10)   # Next-step slippage / book scale.
+    gamma_pnl_thresholds = (0.01, 0.05, 0.10)  # Gamma proxy / book scale.
 
     for _, g in book_outputs.groupby(["currency", "date", "expiration_date", "book"], sort=False):
         if g["arm"].nunique() < 2:
@@ -3751,8 +3641,7 @@ def make_arm_pair_summary(strike_disp: pd.DataFrame, book_disp: pd.DataFrame) ->
 # =============================================================================
 # VaR-style diagnostics
 # =============================================================================
-# Computes within-run VaR/CVaR summaries and threshold comparisons from matched
-# common-scenario and repair-specific losses.
+# Matched common-scenario and repair-specific VaR/CVaR summaries.
 
 _parse_args_without_var = parse_args
 _main_without_var = main
@@ -3824,12 +3713,7 @@ def _empirical_var_cvar(x, alpha: float) -> tuple[float, float]:
 
 
 def compute_var_style_outputs(book_outputs: pd.DataFrame, args) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Compute within-run VaR/CVaR summaries and threshold comparisons.
-
-    This module performs no model tuning. For each selected run it uses
-    observed normalized book losses from the same diagnostic sample. The outputs
-    are evaluated under common-scenario and repair-specific loss definitions.
-    """
+    """Compute matched VaR/CVaR summaries under both loss specifications."""
     if book_outputs.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
     alphas = tuple(float(a) for a in getattr(args, "var_alphas", (0.95, 0.99)))
@@ -4031,10 +3915,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # NNProj target model and projection
 # =============================================================================
-# The neural target is trained on a dated historical panel and evaluated on the
-# selected repair slices.
-# The neural model supplies a target that is projected into the same feasible
-# set as the classical repairs.
+# Historical neural target projected into the common feasible set.
 
 _NNPROJ_ARGS = {}
 _NNPROJ_MODEL_INFO = None
@@ -4092,7 +3973,7 @@ def parse_args(argv: Optional[Sequence[str]] = None):
         setattr(args, "add_arms", add)
     for k, v in extras.items():
         setattr(args, k, v)
-    # Store also data/run metadata needed for OOS training.
+    # OOS training metadata.
     extras["synthetic_call_panel"] = str(getattr(args, "synthetic_call_panel", ""))
     extras["month"] = list(getattr(args, "month", []) or [])
     extras["currency"] = str(getattr(args, "currency", "")).upper()
@@ -4140,13 +4021,12 @@ def _load_nnproj_train_panel(cfg: RepairConfig) -> pd.DataFrame:
     """Load the dated training panel for NNProj."""
     mode = str(_NNPROJ_ARGS.get("nnproj_train_mode", "past"))
     if mode == "selected":
-        # The caller will pass selected repair panel directly in run_repairs.
         return pd.DataFrame()
     path = Path(str(_NNPROJ_ARGS.get("synthetic_call_panel", "")))
     if not path.exists():
         raise FileNotFoundError(f"NNPROJ training panel not found: {path}")
     train_start, train_end = _infer_train_window()
-    # Load without month filtering, then apply the explicit training window.
+    # Apply the training window after loading full history.
     train_cfg = replace(cfg, currency=str(_NNPROJ_ARGS.get("currency", cfg.currency)).upper(),
                         snapshot_hour=int(_NNPROJ_ARGS.get("snapshot_hour", cfg.snapshot_hour)))
     df = load_synthetic_panel(path, train_cfg, [],
@@ -4168,8 +4048,7 @@ def _nnproj_features_from_df(df: pd.DataFrame) -> np.ndarray:
     rel = pd.to_numeric(df.get("relspread_floor"), errors="coerce").to_numpy(dtype=float)
     if not np.isfinite(rel).any() and {"C_bid", "C_ask", "C_mid"}.issubset(df.columns):
         rel = (pd.to_numeric(df["C_ask"], errors="coerce") - pd.to_numeric(df["C_bid"], errors="coerce")).to_numpy(float) / np.maximum(np.abs(pd.to_numeric(df["C_mid"], errors="coerce").to_numpy(float)), 5e-4)
-    # Exclude C_mid/mark itself to prevent identity copying. The
-    # model learns a cross-sectional time/shape prior from past panels.
+    # Exclude C_mid to prevent direct target copying.
     X = np.column_stack([
         k,
         np.abs(k),
@@ -4442,7 +4321,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
 
 # =============================================================================
-# NNProj training-window checks and command help
+# NNProj training-window checks
 # =============================================================================
 _NNPROJ_HELP = """
 repair_analysis.py
@@ -4640,7 +4519,7 @@ def run_repairs(panel_repair: pd.DataFrame, cfg: RepairConfig) -> Tuple[pd.DataF
             allow = bool(_NNPROJ_ARGS.get("nnproj_allow_untrained", False))
             require = bool(_NNPROJ_ARGS.get("nnproj_require_oos_trained", True))
             ok = bool((_NNPROJ_MODEL_INFO or {}).get("status") == "trained_oos" and (_NNPROJ_MODEL_INFO or {}).get("training_window_valid", True))
-            # If n_months is present, it must also pass the training-window check.
+            # Enforce month-count and date-window checks.
             if "n_train_months" in (_NNPROJ_MODEL_INFO or {}):
                 ok = ok and int((_NNPROJ_MODEL_INFO or {}).get("n_train_months", 0)) >= int((_NNPROJ_MODEL_INFO or {}).get("min_train_months_required", 2))
             if require and not allow and not ok:

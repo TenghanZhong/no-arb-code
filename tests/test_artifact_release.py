@@ -25,7 +25,7 @@ def test_compact_lp_source_reproduces_reported_association() -> None:
     frame = pd.read_csv(ROOT / "outputs" / "figure_sources" / "figure4_lp_range.csv")
     spearman = frame["feasible_cxx_range"].corr(frame["cxx_diff"].abs(), method="spearman")
     summary = json.loads((ROOT / "outputs" / "full_rerun_summary.json").read_text(encoding="utf-8"))
-    # The compact CSV is decimal serialized, so allow sub-1e-8 rounding drift.
+    # Allow decimal-serialization error below 1e-8.
     assert spearman == pytest.approx(summary["lp_range"]["spearman_range_vs_abs_cxx"], abs=1e-8)
 
 

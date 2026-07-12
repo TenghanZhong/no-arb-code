@@ -1,13 +1,4 @@
-"""Run the selected two-maturity calendar-spread robustness screen.
-
-The script solves a joint two-maturity QP that augments the strike-slice repair
-constraints with the forward-moneyness calendar condition
-
-    c_long(x_g) >= c_short(x_g)
-
-at common normalized-moneyness grid points ``x_g``. Outputs include matched-pair
-status, constraint residuals, and pre/post curvature dispersion.
-"""
+"""Run the two-maturity calendar-spread robustness screen."""
 
 from __future__ import annotations
 

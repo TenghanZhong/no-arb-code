@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Run and aggregate the 18-calendar-month SVI-target repair check.
-
-This wrapper intentionally mirrors the SVI add-on package command template. It
-does not change the repair design; it only expands the month support to the
-same deterministic 18-calendar-month panel used by the classical expansion.
-"""
+"""Run and aggregate the 18-month SVI-target repair check."""
 from __future__ import annotations
 
 import argparse

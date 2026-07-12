@@ -1,10 +1,4 @@
-"""Compute VaR-style relative differences and hedge-notional diagnostics.
-
-The script reads aggregate outputs and reports (1) the absolute relative
-difference ``omega = |K_m / K_L2 - 1|`` between VaR-style estimates and
-(2) the gross spot notional associated with the risk-reversal hedge gap.
-Synthetic self-checks validate arm ordering and units before data are loaded.
-"""
+"""Compute VaR-style relative differences and hedge-notional diagnostics."""
 
 from __future__ import annotations
 

@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-"""Measure signed hedge-gap persistence for the risk-reversal book.
-
-The script reads existing ``book_outputs.parquet`` files and measures whether
-the L2--Smooth10 hedge gap keeps the same sign across adjacent observations
-within each coverage-qualified run.
-"""
+"""Measure signed risk-reversal hedge-gap persistence."""
 
 from __future__ import annotations
 

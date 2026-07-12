@@ -59,9 +59,7 @@ def refine_feasible_curve(
     for i in range(1, n):
         cumulative_dx[i, :i] = dx[:i]
 
-    # Variables are first price, n-1 vertical slopes, and the L-infinity radius.
-    # This parameterization enforces all strike-shape constraints without the
-    # poorly scaled reciprocal-mesh coefficients in the direct curve matrix.
+    # Parameterize by the first price, vertical slopes, and L-infinity radius.
     curve_map = np.zeros((n, n + 1), dtype=float)
     curve_map[:, 0] = 1.0
     curve_map[:, 1:n] = -cumulative_dx
@@ -101,8 +99,7 @@ def refine_feasible_curve(
     first_price_lower = float(np.max(lower + cumulative_dx @ slopes))
     first_price_upper = float(np.min(upper + cumulative_dx @ slopes))
     interval_deficit = max(first_price_lower - first_price_upper, 0.0)
-    # The midpoint of an inverted interval violates either side by at most
-    # half the deficit, so allow twice the certification tolerance here.
+    # Allow twice the tolerance for midpoint repair of inverted intervals.
     if interval_deficit > 2.0 * REFINEMENT_SOLVER_TOLERANCE:
         raise RuntimeError(
             f"Slope refinement leaves an empty first-price interval: {interval_deficit:.3e}"

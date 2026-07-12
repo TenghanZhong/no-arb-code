@@ -1,19 +1,4 @@
-"""Compute empirical feasible-set curvature ranges.
-
-The script evaluates
-
-    Risk_D2(i; A) = sup_{c,c' in A} |(D2 c)_i - (D2 c')_i|
-
-on the selected Deribit slices. For each requested strike row it solves two
-linear programs over the same
-per-maturity effective bounds, monotonicity, vertical-spread, and convexity
-feasible set:
-
-    max_c (D2 c)_i,    min_c (D2 c)_i.
-
-The output compares the full feasible curvature range with observed
-L2--Smooth10 and L2--NN-Proj curvature gaps.
-"""
+"""Compute feasible curvature ranges with two LPs per interior strike."""
 
 from __future__ import annotations
 
@@ -232,7 +217,7 @@ def solve_range_for_row(
     max_val = float(-max_res.fun)
     if max_val < min_val and max_val > min_val - 1e-8:
         max_val = min_val
-    # Matrix residuals use the actual nonuniform grid for the direct LP check.
+    # Evaluate residuals on the nonuniform grid.
     min_residual = float(max(np.max(a_ub @ min_res.x - b_ub), np.max(lower - min_res.x), np.max(min_res.x - upper), 0.0))
     max_residual = float(max(np.max(a_ub @ max_res.x - b_ub), np.max(lower - max_res.x), np.max(max_res.x - upper), 0.0))
     status = (

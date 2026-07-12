@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Held-out fit audit for the NNProj target model.
-
-This script does not rerun the repair solvers. It retrains the same embargoed
-NNPROJ model used by a run, then evaluates the raw neural proposal on held-out
-evaluation rows saved by that run.
-"""
+"""Audit held-out fit for the embargoed NNProj target model."""
 
 from __future__ import annotations
 

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Run NN-Proj seed and architecture sensitivity analyses.
-
-The script calls the shared learned-repair pipeline, stores each configuration
-under a separate result directory, and summarizes common-support dispersion and
-fit diagnostics.
-"""
+"""Run NNProj seed and architecture sensitivity analyses."""
 
 from __future__ import annotations
 
@@ -439,7 +434,7 @@ def summarize_window(mod, group: pd.DataFrame, fit_by_run: pd.DataFrame) -> Tupl
     common_control_p90 = p90(common_control[D2_GAP_COL]) if not common_control.empty else np.nan
     common_seed_median_p90 = median(common_seed_pair_df["p90_d2_curvature_gap"]) if not common_seed_pair_df.empty else np.nan
 
-    # Fit-equivalent seeds by selected-run held-out price RMSE scaled.
+    # Group seeds by spread-scaled held-out RMSE.
     run_names = set(group["run"].astype(str))
     fit = fit_by_run[fit_by_run["run"].astype(str).isin(run_names)].copy()
     fit["seed"] = fit["run"].map(group.set_index("run")["seed"].to_dict())

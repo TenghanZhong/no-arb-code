@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Run and summarize the 18-month NN-Proj seed replication.
-
-The analysis runs 180 refits on the fixed month panel and evaluates
-dispersion on the common support where all five projections succeed.
-"""
+"""Run and summarize the 18-month NNProj seed replication."""
 
 from __future__ import annotations
 

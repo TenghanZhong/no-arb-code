@@ -1,9 +1,4 @@
-"""Shared single-maturity normalized-call strike constraints.
-
-All screening, repair, verification, and LP-range code in this experiment uses
-this module. Rows are expressed as ``A_ub @ c <= b_ub`` for a call-price vector
-ordered by strictly increasing normalized strike ``x = K / F``.
-"""
+"""Single-maturity constraints in ``A_ub @ c <= b_ub`` form."""
 
 from __future__ import annotations
 
