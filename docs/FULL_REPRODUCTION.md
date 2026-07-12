@@ -9,7 +9,7 @@ BLAS thread by the orchestration scripts.
 
 The canonical input panel must match `data/input_panel.sha256`. The panel is a
 Parquet file containing the hourly call-equivalent quote panel used by the
-repair scripts. It is not included in this anonymous package.
+repair scripts. It is not included in this repository.
 
 ## Stages
 

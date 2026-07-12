@@ -1,4 +1,4 @@
-"""Portable paths shared by the anonymous replication artifact."""
+"""Portable paths shared by the replication artifact."""
 
 from __future__ import annotations
 

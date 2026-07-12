@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify numerical checkpoints, release structure, anonymity, and secrets."""
+"""Verify numerical checkpoints, release structure, and repository hygiene."""
 
 from __future__ import annotations
 
@@ -96,7 +96,7 @@ def text_files():
             yield path
 
 
-def verify_anonymity_and_secrets() -> None:
+def verify_release_hygiene() -> None:
     identity_patterns = [
         re.compile(pattern, re.IGNORECASE)
         for pattern in (
@@ -128,8 +128,8 @@ def main() -> None:
     verify_structure()
     verify_output_checksums()
     verify_headlines()
-    verify_anonymity_and_secrets()
-    print("Artifact verification passed: structure, numerical checkpoints, anonymity, and secrets.")
+    verify_release_hygiene()
+    print("Artifact verification passed: structure, numerical checkpoints, and release hygiene.")
 
 
 if __name__ == "__main__":

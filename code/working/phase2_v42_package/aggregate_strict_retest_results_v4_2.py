@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Aggregate Phase 2B v3.6 strict-retest outputs.
 
-v3.6 is a reporting/evidence layer. It does not rerun repairs.
-It adds the evidence needed after the strict matrix review:
+v3.6 is a reporting layer. It does not rerun repairs.
+It adds the outputs used by the strict-matrix audit:
   1. Primary gate remains amended scaled-hedge only; curvature stays diagnostic.
   2. Rho path is baseline-vs-smooth only, avoiding max-over-pairs artifacts.
   3. Book-channel summaries include hedge-difference and decision-flip proxies.

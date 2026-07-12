@@ -1,8 +1,8 @@
 # Repair-Risk Validation Artifact
 
-Anonymous review artifact for *Quantifying Repair Risk in Crypto Option
-Surfaces*. The package contains the final analysis code, compact source data
-for the reported figures, numerical audit summaries, and a parameterized entry
+Public replication artifact for *Quantifying Repair Risk in Crypto Option
+Surfaces*. The repository contains the analysis code, compact source data for
+the reported figures, numerical audit summaries, and a parameterized entry
 point for the complete rerun.
 
 ## What is included
@@ -11,7 +11,7 @@ point for the complete rerun.
   two-sided adjacent call-spread bounds, and discrete convexity.
 - Classical, SVI-target, targeted learned-repair, five-seed, LP-range,
   calendar-screen, Greek, hedge, and VaR-style analysis code.
-- Compact source data for Figures 3--6 and the final headline summary.
+- Compact source data for Figures 3--6 and the reported summary statistics.
 - Pre-rendered copies of Figures 1--6 used for visual comparison.
 - Tests for the constraint matrix, repair pipeline, Greek convention, audit
   accounting, pair scaling, seed design, and reported summaries.
@@ -22,7 +22,7 @@ provided in `data/input_panel.sha256` so an authorized copy can be verified.
 
 ## Quick reproduction
 
-Create the environment and rebuild the review outputs from the compact data:
+Create the environment and rebuild the artifact outputs from the compact data:
 
 ```bash
 conda env create -f environment.yml
@@ -35,8 +35,8 @@ python reproduce.py verify
 summary to `generated/`. Figure 2 is compiled from its standalone TikZ source
 when `pdflatex` is available; otherwise the supplied vector rendering is copied
 with that fallback recorded in the summary. `verify` also runs the test suite,
-checks the headline quantities, and scans the artifact for secrets and local
-identity traces.
+checks the reported quantities, and scans the repository for secrets and
+machine-local paths.
 
 ## Complete rerun
 
@@ -59,9 +59,9 @@ explicit sensitivity run. Full outputs are written to ignored `results/`,
 code/                 Final full-pipeline implementation
 config/               Frozen paper design and portable path conventions
 data/                  Input instructions and canonical panel digest
-docs/                  Full-rerun and anonymity notes
+docs/                  Full-rerun and release notes
 manifests/             Expected numerical checkpoints
-outputs/               Compact review data, audits, and expected figures
+outputs/               Compact reproduction data, audits, and expected figures
 scripts/               Quick-output and artifact-verification utilities
 tests/                 Unit and integration tests
 reproduce.py           quick, verify, and full entry point
@@ -81,10 +81,9 @@ reproduce.py           quick, verify, and full entry point
 Exact machine-readable values are in `outputs/full_rerun_summary.json` and
 `manifests/expected_headlines.json`.
 
-## Anonymous-review hygiene
+## Release hygiene
 
-This repository is a clean export with one anonymous commit and no source
-repository history. It intentionally omits author metadata, acknowledgments,
-institutional paths, paper source, credentials, and a citation file during
-double-blind review. Those items can be added to a public archival release
-after review.
+This repository is a clean reproducibility export. It excludes credentials,
+machine-local paths, raw market data, and large intermediate outputs. The
+canonical input digest and compact aggregate data preserve the link between
+the public artifact and the reported results. See `docs/RELEASE_HYGIENE.md`.

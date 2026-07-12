@@ -317,7 +317,7 @@ def main() -> int:
 
     row = summary.iloc[0]
     note = (
-        "% Hedge persistence diagnostic. Use only if promoted after review.\n"
+        "% Optional hedge-persistence diagnostic.\n"
         f"% Coverage-filtered runs: {int(row['n_runs_coverage_pass'])}; pairs: {int(row['n_pairs_coverage_pass'])}.\n"
         f"% Median run p90 absolute gap: {row['median_run_p90_abs_gap_bps']:.2f} bps "
         f"(USD {row['median_run_p90_abs_gap_usd_per_1mm']:.0f} per USD 1mm).\n"

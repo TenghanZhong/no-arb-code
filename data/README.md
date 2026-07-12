@@ -1,7 +1,7 @@
 # Input panel
 
-The raw Deribit-derived panel is not redistributed in this anonymous review
-artifact. To run the complete pipeline, provide an authorized Parquet file to
+The raw Deribit-derived panel is not redistributed in this artifact. To run the
+complete pipeline, provide an authorized Parquet file to
 `reproduce.py full --panel ...`.
 
 The canonical file used for the reported results has:

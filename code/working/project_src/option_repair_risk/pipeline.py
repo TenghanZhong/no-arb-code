@@ -1497,7 +1497,7 @@ def write_field_units(state: AuditState) -> None:
         "bid_ask_price_source": "explicit best_bid_price/best_ask_price retained; IV-reconstructed prices audited separately",
         "downstream_curve_forward": "Synthetic calls, parity, moneyness, no-arbitrage, and book coverage use the slice-level median common_forward_price.",
         "greek_convention_sanity": "Deribit delta/gamma are checked against USD-premium spot Greeks with forward/spot carry fixed; coin-price finite differences are convention contrasts only.",
-        "snapshot_hour_quality_note": "09:00 UTC is the current audited main snapshot; yellow-flag review favors 12:00 UTC for quality-maximizing Phase 2 runs unless 09:00 is explicitly used as a post-settlement anchor.",
+        "snapshot_hour_quality_note": "The snapshot hour is recorded explicitly; quality-screened Phase 2 runs use 12:00 UTC unless 09:00 UTC is specified as a post-settlement anchor.",
     }
     path = config.output_root / "field_units.json"
     path.write_text(json.dumps(field_units, indent=2), encoding="utf-8")

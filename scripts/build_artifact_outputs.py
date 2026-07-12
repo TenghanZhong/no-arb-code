@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild review figures and a table source from compact final outputs."""
+"""Rebuild artifact figures and a table source from compact final outputs."""
 
 from __future__ import annotations
 
@@ -301,7 +301,7 @@ def main() -> None:
     }
     table1()
     (GENERATED / "quick_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    print(f"Wrote review outputs to {GENERATED}")
+    print(f"Wrote artifact outputs to {GENERATED}")
 
 
 if __name__ == "__main__":

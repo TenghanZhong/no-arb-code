@@ -109,7 +109,7 @@ def full_commands(panel: Path, jobs: int) -> Iterable[list[str]]:
 
 
 def command_quick() -> None:
-    run([PYTHON, str(ROOT / "scripts" / "build_review_outputs.py")])
+    run([PYTHON, str(ROOT / "scripts" / "build_artifact_outputs.py")])
 
 
 def command_verify() -> None:
@@ -145,7 +145,7 @@ def command_full(args: argparse.Namespace) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
-    subparsers.add_parser("quick", help="rebuild review outputs from compact data")
+    subparsers.add_parser("quick", help="rebuild artifact outputs from compact data")
     subparsers.add_parser("verify", help="rebuild, audit, and run tests")
     full = subparsers.add_parser("full", help="execute the complete empirical rerun")
     full.add_argument("--panel", type=Path, required=True)

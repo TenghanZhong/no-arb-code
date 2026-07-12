@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write SHA-256 checksums for the compact review outputs."""
+"""Write SHA-256 checksums for the compact artifact outputs."""
 
 from __future__ import annotations
 

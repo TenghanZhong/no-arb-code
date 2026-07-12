@@ -310,7 +310,7 @@ def load_synthetic_panel(path: str | Path, cfg: Phase2Config, months: Sequence[s
                          extra_days: int = 0) -> pd.DataFrame:
     """Load a Phase-1 synthetic call panel with explicit DTE/month controls.
 
-    v3 intentionally loads repair and marking panels separately:
+    v3 loads repair and marking panels separately:
       - repair panel: selected months, repair DTE range;
       - marking panel: selected months + one extra day, wider marking DTE range.
     """
@@ -1678,8 +1678,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # v3.1/v3.2 paper-grade override layer
 # =============================================================================
-# The functions below intentionally shadow selected v3 definitions above. This keeps
-# the audited solver primitives while tightening the statistical interpretation layer:
+# The functions below shadow selected v3 definitions above. This preserves the
+# audited solver primitives while tightening the statistical interpretation layer:
 #   - sample-size guarded go/no-go;
 #   - edge-safe theorem-aligned danger scores;
 #   - arm-pair support summaries;
@@ -1747,8 +1747,8 @@ def prepare_slice_arrays(slc: pd.DataFrame, cfg: Phase2Config) -> Dict[str, np.n
     bad_inverted = np.isfinite(bid) & np.isfinite(ask) & (ask < bid)
     bad_box_count = int(np.sum(bad_nonfinite | bad_inverted))
 
-    # Keep the pipeline robust for exploratory runs, but expose the count. In paper
-    # runs this should be zero after Phase-1 filtering.
+    # Preserve exploratory-run diagnostics while counting invalid boxes. The
+    # final analysis expects zero after Phase-1 filtering.
     bid = np.where(np.isfinite(bid), bid, 0.0)
     ask = np.where(np.isfinite(ask), ask, 1.0)
     if np.any(ask < bid):
@@ -2656,12 +2656,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # v3.2 strict fair-retest override layer
 # =============================================================================
-# This layer adds the three protocol-critical outputs requested after the v3.1
-# review:
+# This layer adds three protocol-critical outputs introduced in v3.2:
 #   1. Hedge slippage and gamma-P&L proxy in book_pairwise_dispersion.csv.
 #   2. A scaled-only gamma event, separate from the conservative gamma-RR event.
 #   3. Old-vs-revised danger protocol comparison output.
-# It intentionally leaves the repair solvers unchanged.
+# Repair solvers remain unchanged.
 
 
 def compute_strike_pairwise_dispersion(greeks: pd.DataFrame, cfg: Phase2Config) -> pd.DataFrame:
@@ -3142,7 +3141,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # v3.4 override layer: top/bottom/random controls and safer summaries
 # =============================================================================
-# This layer is intentionally appended as overrides to minimize churn relative to v3.2.
+# This override layer minimizes changes relative to v3.2.
 # Main additions:
 #   - --slice-selection {top,bottom,random} for danger-score placebo tests;
 #   - explicit selected-slice metadata: slice_selection, slice_rank, slice_danger_quantile;
@@ -3676,9 +3675,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # v3.6 economic-decision override layer
 # =============================================================================
-# This layer leaves repair solvers unchanged and adds reviewer-facing "so what"
-# book-level decision metrics. It is deliberately transparent and threshold-based:
-# these are not VaR estimates, but pre-specified hedge-channel decision proxies.
+# This layer leaves repair solvers unchanged and adds threshold-based book-level
+# decision metrics. These are pre-specified hedge-channel proxies, not VaR
+# estimates.
 
 
 def compute_book_pairwise_dispersion(book_outputs: pd.DataFrame) -> pd.DataFrame:
@@ -3692,7 +3691,7 @@ def compute_book_pairwise_dispersion(book_outputs: pd.DataFrame) -> pd.DataFrame
       hedge_slippage_gt_*   = pairwise slippage event rates.
       gamma_pnl_proxy_gt_*  = pairwise gamma-proxy event rates.
 
-    Thresholds are deliberately fixed and simple. They are decision proxies, not
+    Thresholds are fixed and simple. They are decision proxies, not
     optimized cutoffs, and should be reported together with the continuous metrics.
     """
     if book_outputs.empty:
@@ -3905,7 +3904,7 @@ def _empirical_var_cvar(x, alpha: float) -> tuple[float, float]:
 def compute_var_lite_outputs(book_outputs: pd.DataFrame, args) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Compute transparent within-run VaR/CVaR and risk-limit flip diagnostics.
 
-    This module intentionally avoids model tuning. For each selected run it uses
+    This module performs no model tuning. For each selected run it uses
     observed normalized book losses from the same diagnostic sample. The outputs
     are secondary risk-limit sensitivity evidence, not regulatory VaR backtests.
     """
@@ -4252,7 +4251,7 @@ def _nnproj_features_from_df_v41(df: pd.DataFrame) -> np.ndarray:
     rel = pd.to_numeric(df.get("relspread_floor"), errors="coerce").to_numpy(dtype=float)
     if not np.isfinite(rel).any() and {"C_bid", "C_ask", "C_mid"}.issubset(df.columns):
         rel = (pd.to_numeric(df["C_ask"], errors="coerce") - pd.to_numeric(df["C_bid"], errors="coerce")).to_numpy(float) / np.maximum(np.abs(pd.to_numeric(df["C_mid"], errors="coerce").to_numpy(float)), 5e-4)
-    # Deliberately exclude C_mid/mark itself to prevent identity copying.  The
+    # Exclude C_mid/mark itself to prevent identity copying. The
     # model learns a cross-sectional time/shape prior from past panels.
     X = np.column_stack([
         k,
