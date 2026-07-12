@@ -284,7 +284,7 @@ def audit_output_complete(out_dir: Path, runs: list[Path], expected_meta: Dict) 
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    p = argparse.ArgumentParser(description="Audit held-out fit for NNProj runs without rerunning repair solvers.")
+    p = argparse.ArgumentParser(description="Audit held-out NNProj fit from saved evaluation rows.")
     p.add_argument("--results-root", type=Path, default=ROOT / "results" / "nn_targeted")
     p.add_argument("--repair-script", type=Path, default=ROOT / "code" / "analysis" / "learned_pipeline" / "repair_analysis.py")
     p.add_argument("--synthetic-call-panel", type=Path, default=None)

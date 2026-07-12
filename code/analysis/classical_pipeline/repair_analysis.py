@@ -1448,7 +1448,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     p.add_argument("--svi-max-nfev", type=int, default=2000)
 
     p.add_argument("--elastic-penalty", type=float, default=1000.0)
-    p.add_argument("--elastic-box", action="store_true", help="Use elastic bid-ask box globally; default strict. Prefer ELASTIC_L2 arm for an elastic treatment arm.")
+    p.add_argument("--elastic-box", action="store_true", help="Use an elastic bid-ask box for all repair arms.")
     p.add_argument("--qp-backend", choices=["cvxpy", "scipy"], default="cvxpy", help="QP backend for L2/SMOOTH")
     p.add_argument("--qp-solver", default="auto", help="cvxpy solver name or auto")
     p.add_argument("--solver-maxiter", type=int, default=800)
@@ -1537,7 +1537,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"[filter] complete-arm surfaces {before:,} -> {len(surfaces):,}", flush=True)
         surfaces.to_parquet(out_dir / "repaired_surfaces_complete_arms.parquet", index=False)
         if surfaces.empty:
-            print("No complete-arm slices after strict filtering. Re-run with --allow-partial-arms for broader-arm diagnostics.", file=sys.stderr)
+            print("No complete-arm slices after filtering; use --allow-partial-arms to retain partial support.", file=sys.stderr)
             return 3
 
     greeks = compute_greeks(surfaces)
@@ -2391,7 +2391,7 @@ def parse_args(argv: Optional[Sequence[str]] = None):
     p.add_argument("--min-strike-pairs", type=int, default=500)
     p.add_argument("--min-book-pairs", type=int, default=50)
     p.add_argument("--cxx-material-threshold", type=float, default=0.05)
-    p.add_argument("--gamma-scaled-only-threshold", type=float, default=0.05, help="Threshold for scaled-only gamma event: price_diff_box<threshold and gamma_diff_scaled>this value.")
+    p.add_argument("--gamma-scaled-only-threshold", type=float, default=0.05, help="Scaled-gamma threshold used with price_diff_box.")
     p.add_argument("--no-plots", action="store_true")
     return p.parse_args(argv)
 
@@ -2474,7 +2474,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"[filter] complete-arm surfaces {before:,} -> {len(surfaces):,}", flush=True)
         surfaces.to_parquet(out_dir / "repaired_surfaces_complete_arms.parquet", index=False)
         if surfaces.empty:
-            print("No complete-arm slices after strict filtering. Re-run with --allow-partial-arms for broader-arm diagnostics.", file=sys.stderr)
+            print("No complete-arm slices after filtering; use --allow-partial-arms to retain partial support.", file=sys.stderr)
             return 3
 
     greeks = compute_greeks(surfaces)
@@ -2928,7 +2928,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"[filter] complete-arm surfaces {before:,} -> {len(surfaces):,}", flush=True)
         surfaces.to_parquet(out_dir / "repaired_surfaces_complete_arms.parquet", index=False)
         if surfaces.empty:
-            print("No complete-arm slices after strict filtering. Re-run with --allow-partial-arms for broader-arm diagnostics.", file=sys.stderr)
+            print("No complete-arm slices after filtering; use --allow-partial-arms to retain partial support.", file=sys.stderr)
             return 3
 
     greeks = compute_greeks(surfaces)
@@ -3291,7 +3291,7 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
         summary["curvature_signal"]
     )
     summary["analysis_note"] = (
-        "scaled hedge is the primary criterion; curvature is reported as a diagnostic"
+        "scaled hedge criterion; curvature diagnostic"
     )
     return pd.DataFrame([summary])
 
@@ -3432,7 +3432,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"[filter] complete-core-arm surfaces {before:,} -> {len(surfaces):,}", flush=True)
         surfaces.to_parquet(out_dir / "repaired_surfaces_complete_arms.parquet", index=False)
         if surfaces.empty:
-            print("No complete-arm core slices after strict filtering. Re-run with --allow-partial-arms for diagnostics.", file=sys.stderr)
+            print("No complete-arm core slices after filtering; use --allow-partial-arms to retain partial support.", file=sys.stderr)
             return 3
 
     greeks = compute_greeks(surfaces)
