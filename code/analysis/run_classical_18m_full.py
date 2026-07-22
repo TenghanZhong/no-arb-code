@@ -63,7 +63,7 @@ def command(run: Run, out_dir: Path) -> list[str]:
     return [
         sys.executable,
         str(REPAIR),
-        "--synthetic-call-panel", str(PANEL),
+        "--call-equivalent-panel", str(PANEL),
         "--output-dir", str(out_dir),
         "--currency", run.currency,
         "--snapshot-hour", "12",

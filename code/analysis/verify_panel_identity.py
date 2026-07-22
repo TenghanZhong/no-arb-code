@@ -90,7 +90,7 @@ def main() -> None:
     )
     print(json.dumps(summary, indent=2))
     if summary["runs_failed"]:
-        raise RuntimeError("Run input differs from the canonical synthetic-call panel")
+        raise RuntimeError("Run input differs from the canonical call-equivalent quote panel")
 
 
 if __name__ == "__main__":

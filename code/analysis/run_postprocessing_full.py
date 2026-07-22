@@ -186,7 +186,7 @@ def main() -> None:
                 str(ANALYSIS / "nnproj" / "audit_nnproj_heldout_fit.py"),
                 "--results-root", str(RESULTS / "nn_targeted"),
         "--repair-script", str(ANALYSIS / "learned_pipeline" / "repair_analysis.py"),
-                "--synthetic-call-panel", str(PANEL),
+                "--call-equivalent-panel", str(PANEL),
                 "--output-dir", str(DERIVED / "targeted_nn_heldout_fit"),
                 "--eval-source", "selected",
                 "--reuse-complete",

@@ -263,7 +263,7 @@ def load_synthetic_panel(path: str | Path, cfg: RepairConfig, months: Sequence[s
     ]
     missing = [c for c in required if c not in df.columns]
     if missing:
-        raise ValueError(f"Synthetic call panel missing required columns: {missing}")
+        raise ValueError(f"Call-equivalent quote panel missing required columns: {missing}")
 
     out = df.copy()
     out["date"] = to_epoch_seconds(out["date"]).astype("int64")
@@ -1417,7 +1417,13 @@ def expand_arms_from_args(args: argparse.Namespace) -> Tuple[str, ...]:
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Repair-risk analysis for Deribit options")
-    p.add_argument("--synthetic-call-panel", required=True, help="Call-equivalent quote panel in Parquet format")
+    p.add_argument(
+        "--call-equivalent-panel",
+        dest="synthetic_call_panel",
+        metavar="CALL_EQUIVALENT_PANEL",
+        required=True,
+        help="Call-equivalent quote panel in Parquet format",
+    )
     p.add_argument("--output-dir", required=True)
     p.add_argument("--currency", default="BTC")
     p.add_argument("--snapshot-hour", type=int, default=12)
@@ -2347,7 +2353,13 @@ def expand_arms_from_args(args) -> Tuple[str, ...]:
 
 def parse_args(argv: Optional[Sequence[str]] = None):
     p = argparse.ArgumentParser(description="Repair-risk analysis for Deribit options")
-    p.add_argument("--synthetic-call-panel", required=True)
+    p.add_argument(
+        "--call-equivalent-panel",
+        dest="synthetic_call_panel",
+        metavar="CALL_EQUIVALENT_PANEL",
+        required=True,
+        help="Call-equivalent quote panel in Parquet format",
+    )
     p.add_argument("--output-dir", required=True)
     p.add_argument("--currency", choices=["BTC", "ETH"], default="BTC")
     p.add_argument("--snapshot-hour", type=int, default=12)
@@ -2542,7 +2554,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # =============================================================================
 # Hedge and curvature diagnostics
 # =============================================================================
-# Repair solvers remain unchanged.
 
 
 def compute_strike_pairwise_dispersion(greeks: pd.DataFrame, cfg: RepairConfig) -> pd.DataFrame:
@@ -3298,7 +3309,13 @@ def summarize(panel_full: pd.DataFrame, panel_repair: pd.DataFrame, repairs: pd.
 
 def parse_args(argv: Optional[Sequence[str]] = None):
     p = argparse.ArgumentParser(description="Repair-risk analysis for Deribit options")
-    p.add_argument("--synthetic-call-panel", required=True)
+    p.add_argument(
+        "--call-equivalent-panel",
+        dest="synthetic_call_panel",
+        metavar="CALL_EQUIVALENT_PANEL",
+        required=True,
+        help="Call-equivalent quote panel in Parquet format",
+    )
     p.add_argument("--output-dir", required=True)
     p.add_argument("--currency", choices=["BTC", "ETH"], default="BTC")
     p.add_argument("--snapshot-hour", type=int, default=12)

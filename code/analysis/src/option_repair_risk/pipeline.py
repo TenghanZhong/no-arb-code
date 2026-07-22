@@ -957,10 +957,10 @@ def audit7_synthetic_call_panel(state: AuditState) -> None:
 
 def self_check_audit7(path: Path) -> None:
     if not path.exists():
-        raise AssertionError("Audit 7 did not write synthetic_call_panel.parquet")
+        raise AssertionError("Audit 7 did not write the call-equivalent quote panel")
     sample = pd.read_parquet(path, columns=["synthetic_valid"])
     if sample["synthetic_valid"].mean() < 0.95:
-        raise AssertionError("Audit 7 synthetic call panel has too many invalid rows")
+        raise AssertionError("Audit 7 call-equivalent quote panel has too many invalid rows")
 
 
 def load_synthetic(config: AuditConfig) -> pd.DataFrame:
@@ -1495,7 +1495,7 @@ def write_field_units(state: AuditState) -> None:
         "common_spot_field": "common_underlyer_spot",
         "main_sample": f"{config.main_dte_min:g}<DTE<={config.main_dte_max:g}, selected UTC hour only",
         "bid_ask_price_source": "explicit best_bid_price/best_ask_price retained; IV-reconstructed prices audited separately",
-        "downstream_curve_forward": "Synthetic calls, parity, moneyness, no-arbitrage, and book coverage use the slice-level median common_forward_price.",
+        "downstream_curve_forward": "Call-equivalent prices, parity, moneyness, no-arbitrage, and book coverage use the slice-level median common_forward_price.",
         "greek_convention_sanity": "Deribit delta/gamma are checked against USD-premium spot Greeks with forward/spot carry fixed; coin-price finite differences are convention contrasts only.",
         "snapshot_hour_note": "The analysis uses 12:00 UTC unless 09:00 UTC is specified as a post-settlement anchor.",
     }

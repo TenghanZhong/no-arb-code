@@ -90,7 +90,7 @@ def repair_command(out_dir: Path, currency: str, month: str, selection: str, hid
     return [
         sys.executable,
         str(REPAIR_SCRIPT),
-        "--synthetic-call-panel", str(PANEL),
+        "--call-equivalent-panel", str(PANEL),
         "--output-dir", str(out_dir),
         "--currency", currency,
         "--snapshot-hour", "12",
@@ -228,7 +228,7 @@ def run_fit_audit(analysis_dir: Path) -> Path:
         str(AUDIT),
         "--results-root", str(analysis_dir),
         "--repair-script", str(REPAIR_SCRIPT),
-        "--synthetic-call-panel", str(PANEL),
+        "--call-equivalent-panel", str(PANEL),
         "--output-dir", str(out),
         "--eval-source", "selected",
     ]

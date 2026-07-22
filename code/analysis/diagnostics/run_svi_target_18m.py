@@ -66,7 +66,7 @@ def command(out_dir: Path, currency: str, month: str, selection: str) -> list[st
     return [
         sys.executable,
         str(SCRIPT),
-        "--synthetic-call-panel",
+        "--call-equivalent-panel",
         str(PANEL),
         "--output-dir",
         str(out_dir),

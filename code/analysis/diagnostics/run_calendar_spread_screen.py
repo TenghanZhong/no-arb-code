@@ -432,7 +432,7 @@ def load_panel(path: Path, currencies: list[str], months: list[str], dte_min: fl
         "intrinsic",
         "relspread",
     ]
-    require_columns(df, required, "synthetic_call_panel")
+    require_columns(df, required, "call-equivalent quote panel")
     df = df[df["currency"].isin(currencies)].copy()
     df["month"] = to_month(df["date"])
     df = df[df["month"].isin(months)].copy()

@@ -43,7 +43,7 @@ Place the panel anywhere outside or inside the repository and first
 inspect the commands without executing them:
 
 ```bash
-python reproduce.py full --panel /path/to/synthetic_call_panel.parquet --jobs 4 --dry-run
+python reproduce.py full --panel /path/to/call_equivalent_quote_panel.parquet --jobs 4 --dry-run
 ```
 
 Then remove `--dry-run` to execute the complete pipeline. By default the panel

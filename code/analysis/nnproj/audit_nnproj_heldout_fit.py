@@ -287,7 +287,14 @@ def main(argv: Optional[list[str]] = None) -> int:
     p = argparse.ArgumentParser(description="Audit held-out NNProj fit from saved evaluation rows.")
     p.add_argument("--results-root", type=Path, default=ROOT / "results" / "nn_targeted")
     p.add_argument("--repair-script", type=Path, default=ROOT / "code" / "analysis" / "learned_pipeline" / "repair_analysis.py")
-    p.add_argument("--synthetic-call-panel", type=Path, default=None)
+    p.add_argument(
+        "--call-equivalent-panel",
+        dest="synthetic_call_panel",
+        metavar="CALL_EQUIVALENT_PANEL",
+        type=Path,
+        default=None,
+        help="Call-equivalent quote panel in Parquet format",
+    )
     p.add_argument("--output-dir", type=Path, default=None)
     p.add_argument("--eval-source", choices=["selected", "month"], default="selected")
     p.add_argument("--max-eval-rows", type=int, default=0, help="0 means all valid eval rows.")
@@ -317,7 +324,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         panel_path = ROOT / "results" / "panel_build" / "synthetic_call_panel.parquet"
     panel_path = panel_path.resolve()
     if not panel_path.exists():
-        raise SystemExit(f"synthetic_call_panel not found: {panel_path}")
+        raise SystemExit(f"Call-equivalent quote panel not found: {panel_path}")
 
     out_dir = args.output_dir or (results_root / "heldout_fit")
     out_dir.mkdir(parents=True, exist_ok=True)
