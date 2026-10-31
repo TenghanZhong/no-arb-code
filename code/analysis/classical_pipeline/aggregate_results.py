@@ -433,7 +433,7 @@ def plot_slice_selection(contrast: pd.DataFrame, outdir: Path):
     plt.figure(figsize=(7, 4))
     plt.boxplot(data, labels=order, showmeans=True)
     plt.ylabel(metric)
-    plt.title("High-score-score selection contrast")
+    plt.title("Slice-selection contrast")
     plt.tight_layout()
     plt.savefig(fig_dir / "slice_selection_contrast.png", dpi=180)
     plt.close()

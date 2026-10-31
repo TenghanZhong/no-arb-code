@@ -3669,7 +3669,7 @@ def _parse_var_args(argv: Optional[Sequence[str]] = None):
     ap = argparse.ArgumentParser(add_help=False)
     vg = ap.add_mutually_exclusive_group()
     vg.add_argument("--var-style", dest="var_style", action="store_true", help="Enable VaR-style diagnostics.")
-    vg.add_argument("--no-var-style", dest="no_var_style", action="store_true", help="Disable VaR-style/VaR-style outputs.")
+    vg.add_argument("--no-var-style", dest="no_var_style", action="store_true", help="Disable VaR-style diagnostics.")
     ap.add_argument("--var-alphas", nargs="*", type=float, default=None, help="VaR quantile levels, e.g. 0.95 0.99.")
     ap.add_argument("--var-min-losses", type=int, default=None, help="Minimum finite losses per book/arm required for VaR-style.")
     ap.add_argument("--var-absolute-limits", nargs="*", type=float, default=None, help="Fixed normalized VaR/capital limits, e.g. 0.05 0.10 0.25.")

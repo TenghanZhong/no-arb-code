@@ -43,7 +43,7 @@
 \node[font=\small\itshape, text=topText, align=center, text width=8.5cm] (top) at (0,-0.25)
   {Only the repair rule varies; the quote panel, feasible set, and downstream functionals are held fixed.};
 
-% ===================== Section 1 (2x2, legend removed) =====================
+% Section 1: Matched comparisons
 \node[hdr, text=blueText, anchor=north] (h1) at (0,-0.82) {1.\, Matched comparisons};
 
 \node[bluebox, text width=3.78cm, minimum height=1.24cm, anchor=north] (s1a) at ($(h1.south)+(-2.17,-0.20)$)
@@ -59,7 +59,7 @@
   \node[outer, draw=blueLine, fill=blueFill, fit=(h1)(s1a)(s1b)(s1c)(s1d)] (sec1) {};
 \end{scope}
 
-% ===================== Section 2 (stacked, footnote removed) =====================
+% Section 2: Evaluation screens
 \node[hdr, text=orngText, anchor=north] (h2) at ($(sec1.south)+(0,-0.46)$) {2.\, Evaluation screens};
 
 \node[orngbox, text width=8.18cm, minimum height=0.82cm, anchor=north] (s2a) at ($(h2.south)+(0,-0.18)$)
@@ -73,7 +73,7 @@
   \node[outer, draw=orngLine, fill=orngFill, fit=(h2)(s2a)(s2c)] (sec2) {};
 \end{scope}
 
-% ===================== Section 3 (footnote removed) =====================
+% Section 3: Metrics and inference
 \node[hdr, text=grnText, anchor=north] (h3) at ($(sec2.south)+(0,-0.46)$) {3.\, Metrics and inference};
 
 \node[glabel, anchor=north] (lblA) at ($(h3.south)+(0,-0.18)$) {Central repair-risk metrics};

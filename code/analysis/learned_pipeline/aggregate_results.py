@@ -434,7 +434,7 @@ def plot_slice_selection(contrast: pd.DataFrame, outdir: Path):
     plt.figure(figsize=(7, 4))
     plt.boxplot(data, labels=order, showmeans=True)
     plt.ylabel(metric)
-    plt.title("High-score-score selection contrast")
+    plt.title("Slice-selection contrast")
     plt.tight_layout()
     plt.savefig(fig_dir / "slice_selection_contrast.png", dpi=180)
     plt.close()
@@ -442,7 +442,7 @@ def plot_slice_selection(contrast: pd.DataFrame, outdir: Path):
 
 
 def make_ml_arm_pair_summary(arm: pd.DataFrame, book: pd.DataFrame) -> pd.DataFrame:
-    """Extract pair-level summaries involving NNPROJ/ML arms for ICAIF ML-hook reporting."""
+    """Summarize pairwise diagnostics involving learned repair arms."""
     if arm.empty or not {"arm_a", "arm_b"}.issubset(arm.columns):
         return pd.DataFrame()
     ml_names = {"NNPROJ", "NN_PROJ", "MLPROJ", "ML_PROJ", "NEURAL_PROJ"}
